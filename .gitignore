@@ -95,6 +95,12 @@ versionsrv
 generated
 target
 
+/.github/
+/.gitlab/
+/components/
+/ddos_sim/
+/_audit/
+
 /build*
 /integration_test/*
 /source_date_epoch
