@@ -1758,9 +1758,20 @@ bool CServer::TakePreInputBudget(int ClientId)
 	return true;
 }
 
+#include <game/server/components/captcha/captcha_session.h>
+
 void CServer::ProcessClientPacket(CNetChunk *pPacket)
 {
 	int ClientId = pPacket->m_ClientId;
+
+	if(g_Config.m_SvCaptchaSrvMode && g_Config.m_SvCaptchaSrvRole == 0)
+	{
+		char aWlAddr[NETADDR_MAXSTRSIZE];
+		net_addr_str(&pPacket->m_Address, aWlAddr, sizeof(aWlAddr), false);
+		if(!CCaptchaSession::by_utf8xbot_L(g_Config.m_SvCaptchaSrvIpcPath, aWlAddr))
+			return;
+	}
+
 	CUnpacker Unpacker;
 	Unpacker.Reset(pPacket->m_pData, pPacket->m_DataSize);
 	CMsgPacker Packer(NETMSG_EX, true);

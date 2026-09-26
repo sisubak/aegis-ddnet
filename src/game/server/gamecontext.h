@@ -6,6 +6,7 @@
 #include "eventhandler.h"
 #include "gameworld.h"
 #include "components/anus_sob/anus_sob_host.h"
+#include "components/captcha/captcha_controller.h"
 #include "playermapping.h"
 #include "teehistorian.h"
 
@@ -226,6 +227,7 @@ public:
 	CEventHandler m_Events;
 	CPlayer *m_apPlayers[MAX_CLIENTS];
 	CAnusSobHost m_AnusSobHost;
+	CCaptchaController m_CaptchaController;
 
 	// keep last input to always apply when none is sent
 	CNetObj_PlayerInput m_aLastPlayerInput[MAX_CLIENTS];

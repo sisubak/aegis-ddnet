@@ -3138,10 +3138,22 @@ if(SERVER)
     components/anus_sob/anus_sob_ipc.h
     components/anus_sob/anus_sob_state.cpp
     components/anus_sob/anus_sob_state.h
-    components/captcha_server/captcha_font.cpp
-    components/captcha_server/captcha_font.h
-    components/captcha_server/captcha_gate.cpp
-    components/captcha_server/captcha_gate.h
+    components/captcha/captcha_box.cpp
+    components/captcha/captcha_box.h
+    components/captcha/captcha_controller.cpp
+    components/captcha/captcha_controller.h
+    components/captcha/captcha_gate.cpp
+    components/captcha/captcha_gate.h
+    components/captcha/captcha_gate.h
+    components/captcha/captcha_glyphs.cpp
+    components/captcha/captcha_glyphs.h
+    components/captcha/captcha_hud.cpp
+    components/captcha/captcha_hud.h
+    components/captcha/captcha_ipc.cpp
+    components/captcha/captcha_ipc.h
+    components/captcha/captcha_session.cpp
+    components/captcha/captcha_session.h
+
     ddracechat.cpp
     ddracecommands.cpp
     entities/character.cpp

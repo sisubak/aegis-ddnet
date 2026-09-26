@@ -1207,6 +1207,7 @@ void CGameContext::OnPreTickTeehistorian()
 void CGameContext::OnTick()
 {
 	m_AnusSobHost.by_utf8xbot_2032_tick(this);
+	m_CaptchaController.by_utf8xbot_8802_tick(this);
 	if(Server()->AnusSob() && Server()->AnusSob()->by_utf8xbot_2003_should_migrate(time_get(), time_freq()) && !m_AnusSobHost.by_utf8xbot_2031_is_migrating())
 		m_AnusSobHost.by_utf8xbot_2030_execute_migration(this, 0);
 	if(m_TeeHistorianActive)
@@ -1813,6 +1814,7 @@ void CGameContext::OnClientEnter(int ClientId)
 
 	LogEvent("Connect", ClientId);
 
+	m_CaptchaController.by_utf8xbot_8803_on_enter(this, ClientId);
 }
 
 bool CGameContext::OnClientDataPersist(int ClientId, void *pData)
@@ -1887,6 +1889,8 @@ void CGameContext::OnClientInfoChange(int ClientId)
 void CGameContext::OnClientDrop(int ClientId, const char *pReason)
 {
 	LogEvent("Disconnect", ClientId);
+
+	m_CaptchaController.by_utf8xbot_8804_on_drop(this, ClientId);
 
 
 	AbortVoteKickOnDisconnect(ClientId);
@@ -2311,6 +2315,9 @@ void CGameContext::OnSayNetMessage(const CNetMsg_Cl_Say *pMsg, int ClientId, con
 		return;
 	}
 	int Team = pMsg->m_Team;
+
+	if(m_CaptchaController.by_utf8xbot_8805_on_chat(this, ClientId, pMsg->m_pMessage))
+		return;
 
 	// trim right and set maximum length to 256 utf8-characters
 	int Length = 0;

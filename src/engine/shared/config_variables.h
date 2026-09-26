@@ -479,6 +479,7 @@ MACRO_CONFIG_INT(SvCaptchaSrvAnswerSec, sv_captcha_srv_answer_sec, 60, 5, 600, C
 MACRO_CONFIG_STR(SvCaptchaSrvIpcPath, sv_captcha_srv_ipc_path, 256, "captcha_srv.sock", CFGFLAG_SERVER, "captcha_server: local IPC endpoint between gate and game (UDS path on Linux, named pipe on Windows)")
 MACRO_CONFIG_STR(SvCaptchaSrvLobbyMap, sv_captcha_srv_lobby_map, 128, "captcha_lobby", CFGFLAG_SERVER, "captcha_server: map name loaded by the gate server")
 MACRO_CONFIG_INT(SvCaptchaSrvGlyphScale, sv_captcha_srv_glyph_scale, 48, 8, 256, CFGFLAG_SERVER, "captcha_server: pixel size (world units) of one bitmap cell")
+MACRO_CONFIG_INT(SvCaptchaSrvIpcPort, sv_captcha_srv_ipc_port, 8305, 1, 65535, CFGFLAG_SERVER, "captcha_server: loopback udp port for gate to game validated ip notifications")
 MACRO_CONFIG_STR(SvPortFile, sv_port_file, IO_MAX_PATH_LENGTH, "", CFGFLAG_SERVER, "File to write the server's port to (used when running server from client)")
 MACRO_CONFIG_STR(SvHostname, sv_hostname, 128, "", CFGFLAG_SERVER, "Server hostname (0.7 only)")
 MACRO_CONFIG_STR(SvMap, sv_map, 128, "Sunny Side Up", CFGFLAG_SERVER, "Map to use on the server")
