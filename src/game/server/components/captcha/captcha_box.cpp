@@ -1,15 +1,17 @@
 #include "captcha_box.h"
 
 #include "captcha_glyphs.h"
+#include "captcha_map.h"
 
 #include <cstring>
 
 #include <engine/shared/protocol.h>
 
 #include <generated/protocol.h>
-
 #include <game/mapitems.h>
+#include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
+#include <game/server/gameworld.h>
 #include <game/server/gameworld.h>
 
 CCaptchaBox::CCaptchaBox(CGameWorld *pGameWorld, vec2 Pos, const char *pCode) :
@@ -64,13 +66,76 @@ void CCaptchaBox::Reset()
 	m_MarkedForDestroy = true;
 }
 
+void CCaptchaBox::by_utf8xbot_2043(vec2 Pos)
+{
+	m_Pos = Pos;
+}
+
+
 void CCaptchaBox::Tick()
 {
+	float HalfW = 128.0f;
+	float HalfH = 96.0f;
+	CCaptchaMap::by_utf8xbot_5730_extents(&HalfW, &HalfH);
+
+	const float R = 14.0f;
+	const float MinX = m_Pos.x - HalfW + R;
+	const float MaxX = m_Pos.x + HalfW - R;
+	const float MinY = m_Pos.y - HalfH + R;
+	const float MaxY = m_Pos.y + HalfH - R;
+
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		CCharacter *pChr = GameServer()->GetPlayerChar(i);
+		if(!pChr)
+			continue;
+
+		vec2 Pos = pChr->GetPos();
+		vec2 Vel = pChr->Core()->m_Vel;
+		bool Changed = false;
+
+		if(Pos.x < MinX)
+		{
+			Pos.x = MinX;
+			if(Vel.x < 0.0f)
+				Vel.x = 0.0f;
+			Changed = true;
+		}
+		else if(Pos.x > MaxX)
+		{
+			Pos.x = MaxX;
+			if(Vel.x > 0.0f)
+				Vel.x = 0.0f;
+			Changed = true;
+		}
+
+		if(Pos.y < MinY)
+		{
+			Pos.y = MinY;
+			if(Vel.y < 0.0f)
+				Vel.y = 0.0f;
+			Changed = true;
+		}
+		else if(Pos.y > MaxY)
+		{
+			Pos.y = MaxY;
+			if(Vel.y > 0.0f)
+				Vel.y = 0.0f;
+			Changed = true;
+		}
+
+		if(Changed)
+		{
+			pChr->SetPosition(Pos);
+			pChr->SetVelocity(Vel);
+		}
+	}
 }
 
 void CCaptchaBox::TickPaused()
 {
 }
+
 
 int CCaptchaBox::by_utf8xbot_5521() const
 {
@@ -107,8 +172,9 @@ void CCaptchaBox::Snap(int SnappingClient)
 
 	int IdIndex = 0;
 
-	const float HalfW = 120.0f;
-	const float HalfH = 90.0f;
+	float HalfW = 128.0f;
+	float HalfH = 96.0f;
+	CCaptchaMap::by_utf8xbot_5730_extents(&HalfW, &HalfH);
 
 	vec2 TopLeft = m_Pos + vec2(-HalfW, -HalfH);
 	vec2 TopRight = m_Pos + vec2(HalfW, -HalfH);
@@ -120,13 +186,13 @@ void CCaptchaBox::Snap(int SnappingClient)
 	by_utf8xbot_6193(Context, IdIndex, BottomRight, BottomLeft);
 	by_utf8xbot_6193(Context, IdIndex, BottomLeft, TopLeft);
 
-	const float GlyphW = 48.0f;
-	const float GlyphH = 64.0f;
-	const float Step = 60.0f;
+	const float GlyphW = 72.0f;
+	const float GlyphH = 96.0f;
+	const float Step = 90.0f;
 
 	float TotalWidth = (m_NumDigits > 0) ? (Step * (m_NumDigits - 1) + GlyphW) : 0.0f;
 	float StartX = m_Pos.x - TotalWidth * 0.5f;
-	float BaseY = m_Pos.y - HalfH - 40.0f - GlyphH;
+	float BaseY = m_Pos.y - HalfH - 30.0f - GlyphH;
 
 	for(int i = 0; i < m_NumDigits; i++)
 	{

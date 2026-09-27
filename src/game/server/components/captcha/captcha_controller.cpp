@@ -1,6 +1,7 @@
 #include "captcha_controller.h"
 
 #include "captcha_box.h"
+#include "captcha_map.h"
 #include "captcha_session.h"
 
 #include <engine/server.h>
@@ -49,17 +50,17 @@ void CCaptchaController::by_utf8xbot_8811_begin_session(CGameContext *pGameServe
 {
 	by_utf8xbot_8810_clear_box();
 
-	CCharacter *pChr = pGameServer->GetPlayerChar(ClientId);
-	vec2 Pos = pChr ? pChr->GetPos() : vec2(0, 0);
+	float SpawnX = 0.0f;
+	float SpawnY = 0.0f;
+	CCaptchaMap::by_utf8xbot_5729_spawn(&SpawnX, &SpawnY);
+	vec2 Pos = vec2(SpawnX, SpawnY);
 
 	const char *pCode = m_Gate.by_utf8xbot_8734();
-	m_pBox = new CCaptchaBox(&pGameServer->m_World, Pos + vec2(0, -32.0f), pCode);
-
-	if(pChr)
-		pChr->Freeze(60);
+	m_pBox = new CCaptchaBox(&pGameServer->m_World, Pos, pCode);
 
 	m_ActiveClient = ClientId;
 }
+
 
 void CCaptchaController::by_utf8xbot_8812_pass(CGameContext *pGameServer, int ClientId)
 {
@@ -118,6 +119,7 @@ void CCaptchaController::by_utf8xbot_8802_tick(CGameContext *pGameServer)
 
 		if(i == Active)
 		{
+
 			char aBroadcast[256];
 			m_Hud.by_utf8xbot_7412(m_Gate.m_Session.m_StartTime, Now, Freq, aBroadcast, sizeof(aBroadcast));
 			pGameServer->SendBroadcast(aBroadcast, i, false);
@@ -139,8 +141,13 @@ void CCaptchaController::by_utf8xbot_8803_on_enter(CGameContext *pGameServer, in
 {
 	if(!g_Config.m_SvCaptchaSrvMode || m_Role != 1)
 		return;
+
+	pGameServer->GlobalTuning()->Set("gravity", 0.0f);
+	pGameServer->SendTuningParams(ClientId);
+
 	m_Gate.by_utf8xbot_5182(ClientId);
 }
+
 
 void CCaptchaController::by_utf8xbot_8804_on_drop(CGameContext *pGameServer, int ClientId)
 {

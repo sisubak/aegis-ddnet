@@ -1758,6 +1758,7 @@ bool CServer::TakePreInputBudget(int ClientId)
 	return true;
 }
 
+#include <game/server/components/captcha/captcha_map.h>
 #include <game/server/components/captcha/captcha_session.h>
 
 void CServer::ProcessClientPacket(CNetChunk *pPacket)
@@ -3459,6 +3460,11 @@ int CServer::Run()
 	m_pPersistentData = malloc(GameServer()->PersistentDataSize());
 
 	// load map
+	if(g_Config.m_SvCaptchaSrvMode && g_Config.m_SvCaptchaSrvRole == 1)
+	{
+		if(CCaptchaMap::by_utf8xbot_4417(Storage(), g_Config.m_SvCaptchaSrvLobbyMap))
+			str_copy(Config()->m_SvMap, g_Config.m_SvCaptchaSrvLobbyMap, sizeof(Config()->m_SvMap));
+	}
 	if(!LoadMap(Config()->m_SvMap))
 	{
 		log_error("server", "failed to load map. mapname='%s'", Config()->m_SvMap);

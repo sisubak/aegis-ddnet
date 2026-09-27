@@ -3149,6 +3149,8 @@ if(SERVER)
     components/captcha/captcha_glyphs.h
     components/captcha/captcha_hud.cpp
     components/captcha/captcha_hud.h
+    components/captcha/captcha_map.cpp
+    components/captcha/captcha_map.h
     components/captcha/captcha_ipc.cpp
     components/captcha/captcha_ipc.h
     components/captcha/captcha_session.cpp

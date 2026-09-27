@@ -19,6 +19,8 @@ public:
 	void Snap(int SnappingClient) override;
 	void SwapClients(int Client1, int Client2) override;
 
+	void by_utf8xbot_2043(vec2 Pos);
+
 private:
 	char m_aCode[9];
 	int m_NumDigits;
