@@ -91,11 +91,12 @@ void CAbstractPacker::AddRaw(const void *pData, int Size)
 	if(m_Error)
 		return;
 
-	if(m_pCurrent + Size > m_pEnd)
+	if(Size < 0 || m_pCurrent + Size > m_pEnd)
 	{
 		m_Error = true;
 		return;
 	}
+
 
 	mem_copy(m_pCurrent, pData, Size);
 	m_pCurrent += Size;

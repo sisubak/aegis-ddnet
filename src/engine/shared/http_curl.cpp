@@ -45,6 +45,62 @@ static int CurlDebug(CURL *pHandle, curl_infotype Type, char *pData, size_t Data
 	return 0;
 }
 
+static bool by_utf8xhttp_4471_is_blocked_ipv4(unsigned char a, unsigned char b)
+{
+	if(a == 127)
+		return true;
+	if(a == 10)
+		return true;
+	if(a == 172 && b >= 16 && b <= 31)
+		return true;
+	if(a == 192 && b == 168)
+		return true;
+	if(a == 169 && b == 254)
+		return true;
+	if(a == 0)
+		return true;
+	return false;
+}
+
+static bool by_utf8xhttp_4472_is_blocked_ipv6(const unsigned char *pAddr)
+{
+	static const unsigned char s_aLoopback[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+	if(memcmp(pAddr, s_aLoopback, sizeof(s_aLoopback)) == 0)
+		return true;
+	if(pAddr[0] == 0xfe && (pAddr[1] & 0xc0) == 0x80)
+		return true;
+	if((pAddr[0] & 0xfe) == 0xfc)
+		return true;
+	if(pAddr[0] == 0 && pAddr[1] == 0 && pAddr[2] == 0 && pAddr[3] == 0 &&
+		pAddr[4] == 0 && pAddr[5] == 0 && pAddr[6] == 0 && pAddr[7] == 0 &&
+		pAddr[8] == 0 && pAddr[9] == 0 && pAddr[10] == 0xff && pAddr[11] == 0xff)
+	{
+		return by_utf8xhttp_4471_is_blocked_ipv4(pAddr[12], pAddr[13]);
+	}
+	return false;
+}
+
+static int by_utf8xhttp_4473_opensocket(void *pUser, curlsocktype Purpose, struct curl_sockaddr *pAddr)
+{
+	(void)pUser;
+	(void)Purpose;
+	if(pAddr->family == AF_INET && pAddr->addrlen >= (int)sizeof(sockaddr_in))
+	{
+		const sockaddr_in *pIn = (const sockaddr_in *)&pAddr->addr;
+		const unsigned char *pIp = (const unsigned char *)&pIn->sin_addr;
+		if(by_utf8xhttp_4471_is_blocked_ipv4(pIp[0], pIp[1]))
+			return CURL_SOCKET_BAD;
+	}
+	else if(pAddr->family == AF_INET6 && pAddr->addrlen >= (int)sizeof(sockaddr_in6))
+	{
+		const sockaddr_in6 *pIn6 = (const sockaddr_in6 *)&pAddr->addr;
+		if(by_utf8xhttp_4472_is_blocked_ipv6((const unsigned char *)&pIn6->sin6_addr))
+			return CURL_SOCKET_BAD;
+	}
+	return (int)socket(pAddr->family, pAddr->socktype, pAddr->protocol);
+}
+
+
 CHttpRequestCurl::CHttpRequestCurl(const char *pUrl) :
 	IHttpRequest(pUrl)
 {
@@ -102,11 +158,18 @@ bool CHttpRequestCurl::ConfigureHandle(CURL *pHandle)
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 	curl_easy_setopt(pHandle, CURLOPT_PROTOCOLS, Protocols);
+	curl_easy_setopt(pHandle, CURLOPT_REDIR_PROTOCOLS, Protocols);
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
 	curl_easy_setopt(pHandle, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(pHandle, CURLOPT_MAXREDIRS, 4L);
+	if(!g_Config.m_HttpAllowInsecure)
+	{
+		curl_easy_setopt(pHandle, CURLOPT_OPENSOCKETFUNCTION, by_utf8xhttp_4473_opensocket);
+		curl_easy_setopt(pHandle, CURLOPT_OPENSOCKETDATA, this);
+	}
+
 	if(m_FailOnErrorStatus)
 	{
 		curl_easy_setopt(pHandle, CURLOPT_FAILONERROR, 1L);

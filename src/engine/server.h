@@ -369,6 +369,7 @@ public:
 	virtual bool DnsblPending(int ClientId) = 0;
 	virtual bool DnsblBlack(int ClientId) = 0;
 	virtual const char *GetAnnouncementLine() = 0;
+	virtual bool GetNewServerVersion(char *pBuf, int Size) const { return false; }
 	virtual bool ClientPrevIngame(int ClientId) = 0;
 	virtual const char *GetNetErrorString(int ClientId) = 0;
 	virtual void ResetNetErrorString(int ClientId) = 0;

@@ -14,6 +14,8 @@ public:
 	int m_ActiveClient;
 	int64_t m_StartTime;
 	int m_TypedChars;
+	int m_Attempts;
+	int64_t m_LastAttempt;
 
 	CCaptchaSession();
 
@@ -23,6 +25,7 @@ public:
 	void by_utf8xbot_D(int Client, int64_t Now);
 	void by_utf8xbot_E();
 	int by_utf8xbot_F() const;
+	bool by_utf8xbot_M(int64_t Now, int64_t Freq);
 	bool by_utf8xbot_G(int64_t Now, int64_t Freq, int TimeoutSec) const;
 	bool by_utf8xbot_H(const char *pAnswer) const;
 	const char *by_utf8xbot_I();

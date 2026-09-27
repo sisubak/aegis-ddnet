@@ -45,7 +45,7 @@ void CCaptchaIpc::by_utf8xbot_5502_close()
 	m_Open = false;
 }
 
-bool CCaptchaIpc::by_utf8xbot_5503_poll(char *pOutIp, int OutSize)
+bool CCaptchaIpc::by_utf8xbot_5503_poll(char *pOutIp, int OutSize, const char *pSecret)
 {
 	if(!m_Open || !m_Socket || !pOutIp || OutSize <= 0)
 		return false;
@@ -56,19 +56,41 @@ bool CCaptchaIpc::by_utf8xbot_5503_poll(char *pOutIp, int OutSize)
 	if(Size <= 0 || !pData)
 		return false;
 
-	int Copy = Size < OutSize - 1 ? Size : OutSize - 1;
+	if(!(From.ip[0] == 127 && From.ip[1] == 0 && From.ip[2] == 0 && From.ip[3] == 1))
+		return false;
+
+	char aBuf[512];
+	int Copy = Size < (int)sizeof(aBuf) - 1 ? Size : (int)sizeof(aBuf) - 1;
 	for(int i = 0; i < Copy; i++)
-		pOutIp[i] = (char)pData[i];
-	pOutIp[Copy] = 0;
+		aBuf[i] = (char)pData[i];
+	aBuf[Copy] = 0;
 
 	int Len = Copy;
-	while(Len > 0 && (pOutIp[Len - 1] == '\n' || pOutIp[Len - 1] == '\r' || pOutIp[Len - 1] == ' ' || pOutIp[Len - 1] == '\t'))
-		pOutIp[--Len] = 0;
+	while(Len > 0 && (aBuf[Len - 1] == '\n' || aBuf[Len - 1] == '\r' || aBuf[Len - 1] == ' ' || aBuf[Len - 1] == '\t'))
+		aBuf[--Len] = 0;
 
-	return Len > 0;
+	const char *pSep = strchr(aBuf, ':');
+	if(!pSep)
+		return false;
+
+	int SecretLen = (int)(pSep - aBuf);
+	const char *pExpected = pSecret ? pSecret : "";
+	if((int)str_length(pExpected) != SecretLen || str_comp_num(aBuf, pExpected, SecretLen) != 0)
+		return false;
+
+	const char *pIp = pSep + 1;
+	int IpLen = 0;
+	while(pIp[IpLen] && IpLen < OutSize - 1)
+	{
+		pOutIp[IpLen] = pIp[IpLen];
+		IpLen++;
+	}
+	pOutIp[IpLen] = 0;
+
+	return IpLen > 0;
 }
 
-bool CCaptchaIpc::by_utf8xbot_5504_send(int Port, const char *pIp)
+bool CCaptchaIpc::by_utf8xbot_5504_send(int Port, const char *pIp, const char *pSecret)
 {
 	if(!pIp)
 		return false;
@@ -90,8 +112,10 @@ bool CCaptchaIpc::by_utf8xbot_5504_send(int Port, const char *pIp)
 	if(!Socket)
 		return false;
 
-	int Len = (int)str_length(pIp);
-	int Sent = net_udp_send(Socket, &Addr, pIp, Len);
+	char aBuf[512];
+	str_format(aBuf, sizeof(aBuf), "%s:%s", pSecret ? pSecret : "", pIp);
+	int Len = (int)str_length(aBuf);
+	int Sent = net_udp_send(Socket, &Addr, aBuf, Len);
 	net_udp_close(Socket);
 
 	return Sent == Len;

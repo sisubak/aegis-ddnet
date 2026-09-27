@@ -67,7 +67,7 @@ void CCaptchaController::by_utf8xbot_8812_pass(CGameContext *pGameServer, int Cl
 	char aAddr[NETADDR_MAXSTRSIZE];
 	net_addr_str(pGameServer->Server()->ClientAddr(ClientId), aAddr, sizeof(aAddr), false);
 
-	CCaptchaIpc::by_utf8xbot_5504_send(g_Config.m_SvCaptchaSrvIpcPort, aAddr);
+	CCaptchaIpc::by_utf8xbot_5504_send(g_Config.m_SvCaptchaSrvIpcPort, aAddr, g_Config.m_SvCaptchaSrvIpcSecret);
 
 	pGameServer->SendChatTarget(ClientId, "Капча пройдена. Переход на игровой сервер.");
 	pGameServer->Server()->RedirectClient(ClientId, g_Config.m_SvCaptchaSrvGamePort);
@@ -87,7 +87,7 @@ void CCaptchaController::by_utf8xbot_8802_tick(CGameContext *pGameServer)
 	if(m_Role == 0)
 	{
 		char aIp[NETADDR_MAXSTRSIZE];
-		while(m_Ipc.by_utf8xbot_5503_poll(aIp, sizeof(aIp)))
+		while(m_Ipc.by_utf8xbot_5503_poll(aIp, sizeof(aIp), g_Config.m_SvCaptchaSrvIpcSecret))
 			CCaptchaSession::by_utf8xbot_K(g_Config.m_SvCaptchaSrvIpcPath, aIp);
 		return;
 	}
@@ -168,6 +168,11 @@ bool CCaptchaController::by_utf8xbot_8805_on_chat(CGameContext *pGameServer, int
 		return false;
 
 	if(m_Gate.by_utf8xbot_2158() != ClientId)
+		return true;
+
+	int64_t Now = pGameServer->Server()->Tick();
+	int64_t Freq = pGameServer->Server()->TickSpeed();
+	if(!m_Gate.by_utf8xbot_4891(ClientId, Now, Freq))
 		return true;
 
 	if(m_Gate.by_utf8xbot_4890(ClientId, pMessage))

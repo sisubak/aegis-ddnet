@@ -77,6 +77,14 @@ bool CCaptchaGate::by_utf8xbot_4890(int ClientId, const char *pAnswer)
 	return m_Session.by_utf8xbot_H(pAnswer);
 }
 
+bool CCaptchaGate::by_utf8xbot_4891(int ClientId, int64_t Now, int64_t Freq)
+{
+	if(ClientId < 0 || ClientId != m_Active)
+		return false;
+	return m_Session.by_utf8xbot_M(Now, Freq);
+}
+
+
 int CCaptchaGate::by_utf8xbot_2158() const
 {
 	return m_Active;

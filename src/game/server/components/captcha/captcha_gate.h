@@ -22,6 +22,7 @@ public:
 	int by_utf8xbot_3271(int64_t Now);
 	int by_utf8xbot_6605(int64_t Now, int64_t Freq, int TimeoutSec) const;
 	bool by_utf8xbot_4890(int ClientId, const char *pAnswer);
+	bool by_utf8xbot_4891(int ClientId, int64_t Now, int64_t Freq);
 	int by_utf8xbot_2158() const;
 	const char *by_utf8xbot_8734();
 	int by_utf8xbot_1927(int ClientId) const;

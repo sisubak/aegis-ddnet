@@ -70,13 +70,17 @@ static lws_context *websocket_context(int socket)
 
 static void receive_chunk(context_data *ctx_data, per_session_data *pss, const void *in, size_t len)
 {
-	websocket_chunk *chunk = ctx_data->recv_buffer.Allocate(len + sizeof(websocket_chunk));
-	dbg_assert(chunk != nullptr, "failed to allocate websocket receive buffer chunk of size %" PRIzu, len);
+	if(len > NET_MAX_PACKETSIZE)
+		return;
+	websocket_chunk *chunk = ctx_data->recv_buffer.Allocate((int)(len + sizeof(websocket_chunk)));
+	if(chunk == nullptr)
+		return;
 	chunk->size = len;
 	chunk->read = 0;
 	chunk->addr = pss->addr;
 	mem_copy(&chunk->data[0], in, len);
 }
+
 
 static void sockaddr_to_netaddr_websocket(const sockaddr *src, socklen_t src_len, NETADDR *dst)
 {

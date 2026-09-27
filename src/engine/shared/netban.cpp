@@ -43,9 +43,9 @@ CNetBan::CNetHash::CNetHash(const CNetRange *pRange)
 int CNetBan::CNetHash::MakeHashArray(const NETADDR *pAddr, CNetHash aHash[17])
 {
 	int Length = pAddr->type == NETTYPE_IPV4 ? 4 : 16;
-	aHash[0].m_Hash = 0;
-	aHash[0].m_HashIndex = 0;
 	unsigned Hash = 2166136261u; // FNV offset basis
+	aHash[0].m_Hash = Hash & 0xFF;
+	aHash[0].m_HashIndex = 0;
 	for(int i = 1; i <= Length; ++i)
 	{
 		Hash = NetHashMix(Hash, pAddr->ip[i - 1]);
@@ -54,6 +54,7 @@ int CNetBan::CNetHash::MakeHashArray(const NETADDR *pAddr, CNetHash aHash[17])
 	}
 	return Length;
 }
+
 
 template<class T, int HashCount>
 void CNetBan::CBanPool<T, HashCount>::InsertUsed(CBan<T> *pBan)

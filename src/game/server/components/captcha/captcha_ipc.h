@@ -11,8 +11,8 @@ public:
 
 	bool by_utf8xbot_5501_open_receiver(int Port);
 	void by_utf8xbot_5502_close();
-	bool by_utf8xbot_5503_poll(char *pOutIp, int OutSize);
-	static bool by_utf8xbot_5504_send(int Port, const char *pIp);
+	bool by_utf8xbot_5503_poll(char *pOutIp, int OutSize, const char *pSecret);
+	static bool by_utf8xbot_5504_send(int Port, const char *pIp, const char *pSecret);
 
 private:
 	NETSOCKET m_Socket;

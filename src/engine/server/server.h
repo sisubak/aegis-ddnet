@@ -38,6 +38,7 @@ class CMsgPacker;
 class CPacker;
 class IEngine;
 class IEngineHttp;
+class IHttpRequest;
 class ILogger;
 class CAnusSob;
 
@@ -154,6 +155,9 @@ public:
 
 		double m_Traffic;
 		int64_t m_TrafficSince;
+
+		int64_t m_PingWindowSince;
+		int m_PingRepliesInWindow;
 
 		int m_LastAckedSnapshot;
 		int m_LastInputTick;
@@ -313,6 +317,12 @@ public:
 	size_t m_AnnouncementLastLine;
 	std::vector<std::string> m_vAnnouncements;
 
+	std::shared_ptr<IHttpRequest> m_pVersionCheckRequest = nullptr;
+	int64_t m_VersionCheckNextTime = 0;
+	char m_aNewServerVersion[64] = "";
+	bool m_NewServerVersionAvailable = false;
+
+
 	std::shared_ptr<ILogger> m_pFileLogger = nullptr;
 	std::shared_ptr<ILogger> m_pStdoutLogger = nullptr;
 
@@ -412,6 +422,7 @@ public:
 	bool CheckReservedSlotAuth(int ClientId, const char *pPassword);
 	bool TakePreInputBudget(int ClientId);
 	void ProcessClientPacket(CNetChunk *pPacket);
+	bool by_utf8xbot_9931_ping_allowed(int ClientId);
 	void OnNetMsgClientVer(int ClientId, CUuid *pConnectionId, int DDNetVersion, const char *pDDNetVersionStr);
 	void OnNetMsgInfo(int ClientId, const char *pVersion, const char *pPasswordOrNullptr);
 	void OnNetMsgReady(int ClientId);
@@ -536,6 +547,10 @@ public:
 	int m_aPrevStates[MAX_CLIENTS];
 	const char *GetAnnouncementLine() override;
 	void ReadAnnouncementsFile();
+
+	bool GetNewServerVersion(char *pBuf, int Size) const override;
+	void UpdateServerVersionCheck();
+
 
 	static int MaplistEntryCallback(const char *pFilename, int IsDir, int DirType, void *pUser);
 	void InitMaplist();

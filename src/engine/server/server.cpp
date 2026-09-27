@@ -250,6 +250,8 @@ void CServer::CClient::Reset()
 	m_Flags = 0;
 	m_RedirectDropTime = 0;
 	m_IngameBeforeRejoin = false;
+	m_PingWindowSince = 0;
+	m_PingRepliesInWindow = 0;
 
 	std::fill(std::begin(m_aIdMap), std::end(m_aIdMap), -1);
 	std::fill(std::begin(m_aReverseIdMap), std::end(m_aReverseIdMap), -1);
@@ -1761,6 +1763,23 @@ bool CServer::TakePreInputBudget(int ClientId)
 #include <game/server/components/captcha/captcha_map.h>
 #include <game/server/components/captcha/captcha_session.h>
 
+bool CServer::by_utf8xbot_9931_ping_allowed(int ClientId)
+{
+	const int MaxPerSecond = 10;
+	int64_t Now = time_get();
+	int64_t Freq = time_freq();
+	CClient &Client = m_aClients[ClientId];
+	if(Now - Client.m_PingWindowSince >= Freq)
+	{
+		Client.m_PingWindowSince = Now;
+		Client.m_PingRepliesInWindow = 0;
+	}
+	if(Client.m_PingRepliesInWindow >= MaxPerSecond)
+		return false;
+	Client.m_PingRepliesInWindow++;
+	return true;
+}
+
 void CServer::ProcessClientPacket(CNetChunk *pPacket)
 {
 	int ClientId = pPacket->m_ClientId;
@@ -2059,12 +2078,17 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 
 			OnNetMsgRconAuth(ClientId, pName, pPw, SendRconCmds);
 		}
+
 		else if(Msg == NETMSG_PING)
 		{
-			CMsgPacker Msgp(NETMSG_PING_REPLY, true);
-			int Vital = (pPacket->m_Flags & NET_CHUNKFLAG_VITAL) != 0 ? MSGFLAG_VITAL : 0;
-			SendMsg(&Msgp, MSGFLAG_FLUSH | Vital, ClientId);
+			if(by_utf8xbot_9931_ping_allowed(ClientId))
+			{
+				CMsgPacker Msgp(NETMSG_PING_REPLY, true);
+				int Vital = (pPacket->m_Flags & NET_CHUNKFLAG_VITAL) != 0 ? MSGFLAG_VITAL : 0;
+				SendMsg(&Msgp, Vital, ClientId);
+			}
 		}
+
 		else if(Msg == NETMSG_PINGEX)
 		{
 			CUuid *pId = (CUuid *)Unpacker.GetRaw(sizeof(*pId));
@@ -2072,10 +2096,13 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 			{
 				return;
 			}
-			CMsgPacker Msgp(NETMSG_PONGEX, true);
-			Msgp.AddRaw(pId, sizeof(*pId));
-			int Vital = (pPacket->m_Flags & NET_CHUNKFLAG_VITAL) != 0 ? MSGFLAG_VITAL : 0;
-			SendMsg(&Msgp, MSGFLAG_FLUSH | Vital, ClientId);
+			if(by_utf8xbot_9931_ping_allowed(ClientId))
+			{
+				CMsgPacker Msgp(NETMSG_PONGEX, true);
+				Msgp.AddRaw(pId, sizeof(*pId));
+				int Vital = (pPacket->m_Flags & NET_CHUNKFLAG_VITAL) != 0 ? MSGFLAG_VITAL : 0;
+				SendMsg(&Msgp, Vital, ClientId);
+			}
 		}
 		else
 		{
@@ -3313,14 +3340,14 @@ int CServer::LoadMap(const char *pMapName)
 		if(!Storage()->ReadFile(aBuf, IStorage::TYPE_ALL, &pData, &m_aCurrentMapSize[MAP_TYPE_SIXUP]))
 		{
 			free(m_apCurrentMapData[MAP_TYPE_SIXUP]);
-			m_apCurrentMapData[MAP_TYPE_SIXUP] = nullptr;
-			m_aCurrentMapSize[MAP_TYPE_SIXUP] = 0;
-			if(m_pRegister)
-			{
-				m_pRegister->OnConfigChange();
-			}
-			log_error("sixup", "couldn't load map %s", aBuf);
-			log_info("sixup", "disabling 0.7 compatibility for this map only (sv_sixup stays on)");
+			m_apCurrentMapData[MAP_TYPE_SIXUP] = (unsigned char *)malloc(m_aCurrentMapSize[MAP_TYPE_SIX]);
+			m_aCurrentMapSize[MAP_TYPE_SIXUP] = m_aCurrentMapSize[MAP_TYPE_SIX];
+			mem_copy(m_apCurrentMapData[MAP_TYPE_SIXUP], m_apCurrentMapData[MAP_TYPE_SIX], m_aCurrentMapSize[MAP_TYPE_SIX]);
+
+			m_aCurrentMapSha256[MAP_TYPE_SIXUP] = m_aCurrentMapSha256[MAP_TYPE_SIX];
+			m_aCurrentMapCrc[MAP_TYPE_SIXUP] = m_aCurrentMapCrc[MAP_TYPE_SIX];
+
+			log_info("sixup", "no dedicated maps7/%s.map, serving the 0.6 map to 0.7 clients", pMapName);
 		}
 		else
 		{
@@ -3334,6 +3361,7 @@ int CServer::LoadMap(const char *pMapName)
 			Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "sixup", aBufMsg);
 		}
 	}
+
 	if(!Config()->m_SvSixup && m_apCurrentMapData[MAP_TYPE_SIXUP])
 	{
 		free(m_apCurrentMapData[MAP_TYPE_SIXUP]);
@@ -3754,6 +3782,9 @@ int CServer::Run()
 
 				// master server stuff
 				m_pRegister->Update();
+
+				UpdateServerVersionCheck();
+
 
 				if(m_ServerInfoNeedsUpdate)
 				{
@@ -4973,6 +5004,79 @@ const char *CServer::GetAnnouncementLine()
 
 	return m_vAnnouncements[m_AnnouncementLastLine].c_str();
 }
+
+bool CServer::GetNewServerVersion(char *pBuf, int Size) const
+{
+	if(!m_NewServerVersionAvailable || Size <= 0)
+		return false;
+	str_copy(pBuf, m_aNewServerVersion, Size);
+	return true;
+}
+
+void CServer::UpdateServerVersionCheck()
+{
+	if(!g_Config.m_SvVersionCheck || !g_Config.m_SvVersionCheckUrl[0])
+		return;
+	if(m_NewServerVersionAvailable)
+		return;
+
+	if(m_pVersionCheckRequest)
+	{
+		if(!m_pVersionCheckRequest->Done())
+			return;
+
+		if(m_pVersionCheckRequest->State() == EHttpState::DONE)
+		{
+			json_value *pJson = m_pVersionCheckRequest->ResultJson();
+			if(pJson)
+			{
+				const char *pLatest = nullptr;
+				if(pJson->type == json_array && pJson->u.array.length > 0)
+				{
+					const json_value &First = *pJson->u.array.values[0];
+					const json_value &Name = First["name"];
+					if(Name.type == json_string)
+						pLatest = Name.u.string.ptr;
+				}
+				else if(pJson->type == json_object)
+				{
+					const json_value &Tag = (*pJson)["tag_name"];
+					if(Tag.type == json_string)
+						pLatest = Tag.u.string.ptr;
+				}
+
+				if(pLatest)
+				{
+					const char *pCurrent = g_Config.m_SvVersionCurrent[0] ? g_Config.m_SvVersionCurrent : GAME_RELEASE_VERSION;
+					if(str_comp(pLatest, pCurrent) != 0)
+					{
+						str_copy(m_aNewServerVersion, pLatest, sizeof(m_aNewServerVersion));
+						m_NewServerVersionAvailable = true;
+						log_info("version", "new server version available: %s (current %s)", m_aNewServerVersion, pCurrent);
+					}
+				}
+				json_value_free(pJson);
+			}
+		}
+		m_pVersionCheckRequest = nullptr;
+	}
+
+	int64_t Now = time_get();
+	if(Now < m_VersionCheckNextTime)
+		return;
+	m_VersionCheckNextTime = Now + time_freq() * 3600;
+
+	if(!m_pHttp)
+		return;
+
+	std::shared_ptr<IHttpRequest> pRequest = HttpGet(g_Config.m_SvVersionCheckUrl);
+	pRequest->Timeout(CTimeout{4000, 15000, 500, 5});
+	pRequest->MaxResponseSize(1024 * 1024);
+	pRequest->HeaderString("Accept", "application/vnd.github+json");
+	m_pVersionCheckRequest = pRequest;
+	m_pHttp->Run(pRequest);
+}
+
 
 struct CSubdirCallbackUserdata
 {

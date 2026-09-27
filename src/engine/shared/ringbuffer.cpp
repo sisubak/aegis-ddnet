@@ -64,12 +64,18 @@ void CRingBufferBase::Clear()
 
 void *CRingBufferBase::Allocate(int Size)
 {
-	int WantedSize = (Size + sizeof(CItem) + sizeof(CItem) - 1) / sizeof(CItem) * sizeof(CItem);
+	if(Size < 0)
+		return nullptr;
+
+	size_t Wanted = ((size_t)Size + 2 * sizeof(CItem) - 1) / sizeof(CItem) * sizeof(CItem);
 	CItem *pBlock = nullptr;
 
 	// check if we even can fit this block
-	if(WantedSize > m_Size)
+	if(Wanted > (size_t)m_Size)
 		return nullptr;
+
+	const int WantedSize = (int)Wanted;
+
 
 	while(true)
 	{

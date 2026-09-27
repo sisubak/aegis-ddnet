@@ -1,13 +1,23 @@
 #include "captcha_session.h"
 
+#include <base/fs.h>
+#include <base/secure.h>
+
+#include <string>
+#include <unordered_set>
+
 CCaptchaSession::CCaptchaSession()
 {
 	m_aCode[0] = 0;
 	m_CodeLen = 0;
+
 	m_ActiveClient = -1;
 	m_StartTime = 0;
 	m_TypedChars = 0;
+	m_Attempts = 0;
+	m_LastAttempt = 0;
 }
+
 
 void CCaptchaSession::by_utf8xbot_A(int NumDigits)
 {
@@ -16,10 +26,15 @@ void CCaptchaSession::by_utf8xbot_A(int NumDigits)
 	if(NumDigits > 15)
 		NumDigits = 15;
 	for(int i = 0; i < NumDigits; i++)
-		m_aCode[i] = (char)('0' + (rand() % 10));
+	{
+		unsigned char Rnd = 0;
+		secure_random_fill(&Rnd, sizeof(Rnd));
+		m_aCode[i] = (char)('0' + (Rnd % 10));
+	}
 	m_aCode[NumDigits] = 0;
 	m_CodeLen = NumDigits;
 }
+
 
 const char *CCaptchaSession::by_utf8xbot_B() const
 {
@@ -38,7 +53,10 @@ void CCaptchaSession::by_utf8xbot_D(int Client, int64_t Now)
 	m_ActiveClient = Client;
 	m_StartTime = Now;
 	m_TypedChars = 0;
+	m_Attempts = 0;
+	m_LastAttempt = 0;
 }
+
 
 void CCaptchaSession::by_utf8xbot_E()
 {
@@ -49,6 +67,18 @@ int CCaptchaSession::by_utf8xbot_F() const
 {
 	return m_ActiveClient;
 }
+
+bool CCaptchaSession::by_utf8xbot_M(int64_t Now, int64_t Freq)
+{
+	if(Freq > 0 && m_LastAttempt != 0 && (Now - m_LastAttempt) < (Freq / 2))
+		return false;
+	m_LastAttempt = Now;
+	m_Attempts++;
+	if(m_Attempts > 20)
+		return false;
+	return true;
+}
+
 
 bool CCaptchaSession::by_utf8xbot_G(int64_t Now, int64_t Freq, int TimeoutSec) const
 {
@@ -115,22 +145,37 @@ bool CCaptchaSession::by_utf8xbot_L(const char *pPath, const char *pIp)
 {
 	if(!pPath || !pIp)
 		return false;
-	FILE *pFile = fopen(pPath, "r");
-	if(!pFile)
-		return false;
-	char aLine[256];
-	bool Found = false;
-	while(fgets(aLine, sizeof(aLine), pFile))
+
+	static std::unordered_set<std::string> s_Whitelist;
+	static std::string s_LoadedPath;
+	static time_t s_LoadedMtime = 0;
+	static bool s_Loaded = false;
+
+	time_t Modified = 0;
+	bool StatOk = fs_file_time(pPath, nullptr, &Modified) == 0;
+
+	if(!s_Loaded || s_LoadedPath != pPath || !StatOk || Modified != s_LoadedMtime)
 	{
-		int Len = (int)strlen(aLine);
-		while(Len > 0 && (aLine[Len - 1] == '\n' || aLine[Len - 1] == '\r' || aLine[Len - 1] == ' ' || aLine[Len - 1] == '\t'))
-			aLine[--Len] = 0;
-		if(strcmp(aLine, pIp) == 0)
+		s_Whitelist.clear();
+		FILE *pFile = fopen(pPath, "r");
+		if(pFile)
 		{
-			Found = true;
-			break;
+			char aLine[256];
+			while(fgets(aLine, sizeof(aLine), pFile))
+			{
+				int Len = (int)strlen(aLine);
+				while(Len > 0 && (aLine[Len - 1] == '\n' || aLine[Len - 1] == '\r' || aLine[Len - 1] == ' ' || aLine[Len - 1] == '\t'))
+					aLine[--Len] = 0;
+				if(Len > 0)
+					s_Whitelist.insert(std::string(aLine));
+			}
+			fclose(pFile);
 		}
+		s_LoadedPath = pPath;
+		s_LoadedMtime = StatOk ? Modified : 0;
+		s_Loaded = true;
 	}
-	fclose(pFile);
-	return Found;
+
+	return s_Whitelist.find(std::string(pIp)) != s_Whitelist.end();
 }
+

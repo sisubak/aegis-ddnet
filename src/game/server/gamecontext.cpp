@@ -1208,6 +1208,21 @@ void CGameContext::OnTick()
 {
 	m_AnusSobHost.by_utf8xbot_2032_tick(this);
 	m_CaptchaController.by_utf8xbot_8802_tick(this);
+
+	{
+		char aNewVersion[64];
+		if(Server()->GetNewServerVersion(aNewVersion, sizeof(aNewVersion)) && (Server()->Tick() % Server()->TickSpeed()) == 0)
+		{
+			char aBroadcast[128];
+			str_format(aBroadcast, sizeof(aBroadcast), "Вышла новая версия сервера %s. Пожалуйста установи новую.", aNewVersion);
+			for(int i = 0; i < MAX_CLIENTS; i++)
+			{
+				if(m_apPlayers[i] && Server()->IsRconAuthed(i))
+					SendBroadcast(aBroadcast, i, true);
+			}
+		}
+	}
+
 	if(Server()->AnusSob() && Server()->AnusSob()->by_utf8xbot_2003_should_migrate(time_get(), time_freq()) && !m_AnusSobHost.by_utf8xbot_2031_is_migrating())
 		m_AnusSobHost.by_utf8xbot_2030_execute_migration(this, 0);
 	if(m_TeeHistorianActive)
