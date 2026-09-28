@@ -1,6 +1,8 @@
 #include "anus_sob_host.h"
 
 #include <base/log.h>
+#include <base/math.h>
+#include <base/str.h>
 #include <base/time.h>
 #include <engine/server.h>
 #include <engine/shared/config.h>
@@ -13,6 +15,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
+#include <vector>
 
 CAnusSobHost::CAnusSobHost() :
 	m_LoadAttempted(false)
@@ -106,11 +110,12 @@ bool CAnusSobHost::by_utf8xbot_2023_load_from_env()
 	if(!by_utf8xbot_2022_read_state_file(pPath, V))
 	{
 		log_warn("anus_sob", "failed to read child state file '%s'", pPath);
+		std::remove(pPath);
 		return false;
 	}
+	std::remove(pPath);
 	m_vPending = std::move(V);
-	log_info("anus_sob", "loaded %d pending client states from '%s'", (int)m_vPending.size(), pPath);
-	return true;
+	return !m_vPending.empty();
 }
 
 void CAnusSobHost::by_utf8xbot_2024_try_restore(CGameContext *pGs, int ClientId)
@@ -160,16 +165,15 @@ void CAnusSobHost::by_utf8xbot_2024_try_restore(CGameContext *pGs, int ClientId)
 }
 
 #include <base/detect.h>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 
 #if defined(CONF_FAMILY_UNIX)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <cerrno>
 #endif
 
 bool CAnusSobHost::by_utf8xbot_2031_is_migrating() const { return m_State != 0; }
@@ -184,18 +188,50 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 		int Lo = g_Config.m_SvAnusSobPortMin;
 		int Hi = g_Config.m_SvAnusSobPortMax;
 		if(Lo <= 0 || Hi <= Lo) { Lo = 20000; Hi = 60000; }
-		NewPort = Lo + (int)(((unsigned)rand()) % (unsigned)(Hi - Lo + 1));
+		NewPort = Lo + secure_rand_below(Hi - Lo + 1);
 	}
 
 	std::vector<SAnusSobClientState> St;
 	by_utf8xbot_2020_collect(pGs, St);
 
 	char aPath[256];
-	std::snprintf(aPath, sizeof(aPath), "/tmp/anus_sob_%d.state", (int)getpid());
+	std::snprintf(aPath, sizeof(aPath), "/tmp/anus_sob_%d_%d.state", (int)getpid(), NewPort);
+	int StateFd = open(aPath, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, S_IRUSR | S_IWUSR);
+	if(StateFd < 0)
+	{
+		log_error("anus_sob", "failed to create state file '%s' (%d), aborting migration", aPath, errno);
+		return;
+	}
+	close(StateFd);
 	if(!by_utf8xbot_2021_write_state_file(aPath, St))
 	{
 		log_error("anus_sob", "failed to write state file '%s', aborting migration", aPath);
+		unlink(aPath);
 		return;
+	}
+
+	std::vector<std::string> vArgs;
+	{
+		FILE *pCmd = std::fopen("/proc/self/cmdline", "rb");
+		if(pCmd)
+		{
+			std::string Cur;
+			int c;
+			while((c = std::fgetc(pCmd)) != EOF)
+			{
+				if(c == 0)
+				{
+					if(!Cur.empty()) vArgs.push_back(Cur);
+					Cur.clear();
+				}
+				else
+				{
+					Cur.push_back((char)c);
+				}
+			}
+			if(!Cur.empty()) vArgs.push_back(Cur);
+			std::fclose(pCmd);
+		}
 	}
 
 	char aExe[512];
@@ -212,29 +248,83 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 		aExe[L] = 0;
 	}
 
+	if(vArgs.empty())
+		vArgs.push_back(aExe);
+
 	char aPortStr[16];
 	std::snprintf(aPortStr, sizeof(aPortStr), "%d", NewPort);
 
-	log_info("anus_sob", "migration START: %d clients -> new port %d exe=%s state=%s", (int)St.size(), NewPort, aExe, aPath);
+	std::vector<char *> vpArgv;
+	vpArgv.reserve(vArgs.size() + 1);
+	for(std::string &Arg : vArgs)
+		vpArgv.push_back(&Arg[0]);
+	vpArgv.push_back(nullptr);
+
+	log_info("anus_sob", "migration START: %d clients -> new port %d exe=%s state=%s argv=%d", (int)St.size(), NewPort, aExe, aPath, (int)vArgs.size());
+
+	int aReadyPipe[2] = {-1, -1};
+	if(pipe(aReadyPipe) != 0)
+	{
+		log_error("anus_sob", "pipe failed, aborting migration");
+		unlink(aPath);
+		return;
+	}
 
 	pid_t Pid = fork();
 	if(Pid < 0)
 	{
 		log_error("anus_sob", "fork failed, aborting migration");
+		close(aReadyPipe[0]);
+		close(aReadyPipe[1]);
+		unlink(aPath);
 		return;
 	}
 	if(Pid == 0)
 	{
+		close(aReadyPipe[0]);
+		char aReadyStr[16];
+		std::snprintf(aReadyStr, sizeof(aReadyStr), "%d", aReadyPipe[1]);
 		setenv("ANUS_SOB_STATE_FILE", aPath, 1);
 		setenv("ANUS_SOB_PORT", aPortStr, 1);
-		for(int Fd = 3; Fd < 256; ++Fd) close(Fd);
-		char *pArgv[] = { aExe, nullptr };
-		execv(aExe, pArgv);
+		setenv("ANUS_SOB_READY_FD", aReadyStr, 1);
+		for(int Fd = 3; Fd < 256; ++Fd)
+		{
+			if(Fd != aReadyPipe[1]) close(Fd);
+		}
+		execv(aExe, vpArgv.data());
 		_exit(127);
 	}
 
+	close(aReadyPipe[1]);
+
+	int WaitMs = g_Config.m_SvAnusSobChildWaitMs;
+	if(WaitMs < 0) WaitMs = 0;
+	int64_t Deadline = time_get() + (int64_t)((int64_t)time_freq() * WaitMs / 1000);
+	bool ChildReady = false;
+	while(time_get() < Deadline)
+	{
+		char Byte;
+		ssize_t r = read(aReadyPipe[0], &Byte, 1);
+		if(r == 1) { ChildReady = true; break; }
+		if(r == 0) break;
+		int WaitStatus = 0;
+		pid_t w = waitpid(Pid, &WaitStatus, WNOHANG);
+		if(w == Pid)
+		{
+			log_error("anus_sob", "child exited before ready, aborting migration");
+			close(aReadyPipe[0]);
+			unlink(aPath);
+			return;
+		}
+		usleep(20000);
+	}
+	close(aReadyPipe[0]);
+	if(!ChildReady)
+		log_warn("anus_sob", "child readiness not confirmed within %dms, proceeding cautiously", WaitMs);
+
 	m_ChildPid = Pid;
 	m_NewPort = NewPort;
+	str_copy(m_aStatePath, aPath, sizeof(m_aStatePath));
 	m_State = 1;
 	IServer *pServer = pGs->Server();
 	int Redirected = 0;
@@ -244,14 +334,17 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 		pServer->RedirectClient(i, NewPort);
 		++Redirected;
 	}
-	m_ExitDeadline = time_get() + time_freq() * 2;
+	int GraceMs = g_Config.m_SvAnusSobGraceMs;
+	if(GraceMs < 100) GraceMs = 100;
+	m_ExitDeadline = time_get() + (int64_t)((int64_t)time_freq() * GraceMs / 1000);
 	m_State = 2;
-	log_info("anus_sob", "redirected %d clients; parent exits in ~2s", Redirected);
+	log_info("anus_sob", "redirected %d clients; parent exits in ~%dms", Redirected, GraceMs);
 #else
 	(void)pGs; (void)NewPort;
 	log_warn("anus_sob", "migration not supported on this platform");
 #endif
 }
+
 
 void CAnusSobHost::by_utf8xbot_2032_tick(CGameContext *pGs)
 {

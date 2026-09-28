@@ -31,6 +31,7 @@ class CAnusSobHost
 	int m_NewPort = 0;
 	int m_ChildPid = -1;
 	int64_t m_ExitDeadline = 0;
+	char m_aStatePath[256] = {0};
 };
 
 #endif

@@ -632,16 +632,20 @@ int fs_file_time(const char *name, time_t *created, time_t *modified)
 	if(handle == INVALID_HANDLE_VALUE)
 		return 1;
 
-	*created = filetime_to_unixtime(&finddata.ftCreationTime);
-	*modified = filetime_to_unixtime(&finddata.ftLastWriteTime);
+	if(created)
+		*created = filetime_to_unixtime(&finddata.ftCreationTime);
+	if(modified)
+		*modified = filetime_to_unixtime(&finddata.ftLastWriteTime);
 	FindClose(handle);
 #elif defined(CONF_FAMILY_UNIX)
 	struct stat sb;
 	if(stat(name, &sb))
 		return 1;
 
-	*created = sb.st_ctime;
-	*modified = sb.st_mtime;
+	if(created)
+		*created = sb.st_ctime;
+	if(modified)
+		*modified = sb.st_mtime;
 #else
 #error not implemented
 #endif

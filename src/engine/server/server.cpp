@@ -58,6 +58,10 @@ using namespace std::chrono_literals;
 extern std::vector<std::string> FetchAndroidServerCommandQueue();
 #endif
 
+#if defined(CONF_FAMILY_UNIX)
+#include <unistd.h>
+#endif
+
 void CServerBan::InitServerBan(IConsole *pConsole, IStorage *pStorage, CServer *pServer)
 {
 	CNetBan::Init(pConsole, pStorage);
@@ -3144,7 +3148,18 @@ void CServer::PumpNetwork()
 		ResponseToken = NET_SECURITY_TOKEN_UNKNOWN;
 		while(m_NetServer.Recv(&Packet, &ResponseToken))
 		{
-			if(m_pAnusSob) m_pAnusSob->by_utf8xbot_2002_note_packet();
+			if(m_pAnusSob)
+			{
+				m_pAnusSob->by_utf8xbot_2002_note_packet();
+				uint64_t SourceHash = 1469598103934665603ull;
+				const unsigned char *pIpBytes = Packet.m_Address.ip;
+				for(int b = 0; b < (int)sizeof(Packet.m_Address.ip); ++b)
+				{
+					SourceHash ^= pIpBytes[b];
+					SourceHash *= 1099511628211ull;
+				}
+				m_pAnusSob->by_utf8xbot_2008_note_source(SourceHash);
+			}
 
 			if(Packet.m_ClientId == -1)
 			{
@@ -3557,6 +3572,26 @@ int CServer::Run()
 
 	if(Port == 0)
 		log_info("server", "using port %d", BindAddr.port);
+
+#if defined(CONF_FAMILY_UNIX)
+	{
+		const char *pReadyFd = std::getenv("ANUS_SOB_READY_FD");
+		if(pReadyFd && *pReadyFd)
+		{
+			int Fd = atoi(pReadyFd);
+			if(Fd > 2)
+			{
+				const char Byte = 1;
+				ssize_t Written = write(Fd, &Byte, 1);
+				(void)Written;
+				close(Fd);
+			}
+			unsetenv("ANUS_SOB_READY_FD");
+			log_info("anus_sob", "child signalled readiness to parent");
+		}
+	}
+#endif
+
 
 #if defined(CONF_UPNP)
 	m_UPnP.Open(BindAddr);
@@ -5013,6 +5048,44 @@ bool CServer::GetNewServerVersion(char *pBuf, int Size) const
 	return true;
 }
 
+static int by_utf8xbot_5041_cmp_version(const char *pLatest, const char *pCurrent)
+{
+	const char *pA = pLatest;
+	const char *pB = pCurrent;
+	while(*pA && !(*pA >= '0' && *pA <= '9'))
+		pA++;
+	while(*pB && !(*pB >= '0' && *pB <= '9'))
+		pB++;
+	while(*pA || *pB)
+	{
+		int NumA = 0;
+		int NumB = 0;
+		bool HasA = false;
+		bool HasB = false;
+		while(*pA >= '0' && *pA <= '9')
+		{
+			NumA = NumA * 10 + (*pA - '0');
+			pA++;
+			HasA = true;
+		}
+		while(*pB >= '0' && *pB <= '9')
+		{
+			NumB = NumB * 10 + (*pB - '0');
+			pB++;
+			HasB = true;
+		}
+		if(!HasA && !HasB)
+			break;
+		if(NumA != NumB)
+			return NumA > NumB ? 1 : -1;
+		while(*pA && !(*pA >= '0' && *pA <= '9'))
+			pA++;
+		while(*pB && !(*pB >= '0' && *pB <= '9'))
+			pB++;
+	}
+	return 0;
+}
+
 void CServer::UpdateServerVersionCheck()
 {
 	if(!g_Config.m_SvVersionCheck || !g_Config.m_SvVersionCheckUrl[0])
@@ -5048,7 +5121,7 @@ void CServer::UpdateServerVersionCheck()
 				if(pLatest)
 				{
 					const char *pCurrent = g_Config.m_SvVersionCurrent[0] ? g_Config.m_SvVersionCurrent : GAME_RELEASE_VERSION;
-					if(str_comp(pLatest, pCurrent) != 0)
+					if(by_utf8xbot_5041_cmp_version(pLatest, pCurrent) > 0)
 					{
 						str_copy(m_aNewServerVersion, pLatest, sizeof(m_aNewServerVersion));
 						m_NewServerVersionAvailable = true;

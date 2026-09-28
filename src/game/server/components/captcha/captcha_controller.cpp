@@ -57,6 +57,7 @@ void CCaptchaController::by_utf8xbot_8811_begin_session(CGameContext *pGameServe
 
 	const char *pCode = m_Gate.by_utf8xbot_8734();
 	m_pBox = new CCaptchaBox(&pGameServer->m_World, Pos, pCode);
+	m_pBox->by_utf8xbot_2044(ClientId);
 
 	m_ActiveClient = ClientId;
 }
@@ -67,7 +68,14 @@ void CCaptchaController::by_utf8xbot_8812_pass(CGameContext *pGameServer, int Cl
 	char aAddr[NETADDR_MAXSTRSIZE];
 	net_addr_str(pGameServer->Server()->ClientAddr(ClientId), aAddr, sizeof(aAddr), false);
 
-	CCaptchaIpc::by_utf8xbot_5504_send(g_Config.m_SvCaptchaSrvIpcPort, aAddr, g_Config.m_SvCaptchaSrvIpcSecret);
+	if(!CCaptchaIpc::by_utf8xbot_5504_send(g_Config.m_SvCaptchaSrvIpcPort, aAddr, g_Config.m_SvCaptchaSrvIpcSecret))
+	{
+		pGameServer->Server()->Kick(ClientId, "Капча: временная ошибка, попробуй переподключиться");
+		m_Gate.by_utf8xbot_9046(ClientId);
+		m_ActiveClient = -1;
+		by_utf8xbot_8810_clear_box();
+		return;
+	}
 
 	pGameServer->SendChatTarget(ClientId, "Капча пройдена. Переход на игровой сервер.");
 	pGameServer->Server()->RedirectClient(ClientId, g_Config.m_SvCaptchaSrvGamePort);
@@ -176,9 +184,17 @@ bool CCaptchaController::by_utf8xbot_8805_on_chat(CGameContext *pGameServer, int
 		return true;
 
 	if(m_Gate.by_utf8xbot_4890(ClientId, pMessage))
+	{
 		by_utf8xbot_8812_pass(pGameServer, ClientId);
+	}
 	else
-		pGameServer->SendChatTarget(ClientId, "Неверно. Введи цифры из лазеров ещё раз.");
+	{
+		pGameServer->Server()->Kick(ClientId, "Капча не пройдена");
+		m_Gate.by_utf8xbot_9046(ClientId);
+		if(m_ActiveClient == ClientId)
+			m_ActiveClient = -1;
+		by_utf8xbot_8810_clear_box();
+	}
 
 	return true;
 }

@@ -28,6 +28,14 @@ void CAnusSob::by_utf8xbot_2002_note_packet()
 	++m_PacketsInWindow;
 }
 
+void CAnusSob::by_utf8xbot_2008_note_source(uint64_t SourceHash)
+{
+	if(!by_utf8xbot_2005_is_active())
+		return;
+	if(m_UniqueSources.size() < 200000)
+		m_UniqueSources.insert(SourceHash);
+}
+
 bool CAnusSob::by_utf8xbot_2003_should_migrate(int64_t Now, int64_t Freq)
 {
 	if(!by_utf8xbot_2005_is_active())
@@ -36,7 +44,11 @@ bool CAnusSob::by_utf8xbot_2003_should_migrate(int64_t Now, int64_t Freq)
 	if(WindowLen <= 0) WindowLen = Freq;
 	if(Now - m_WindowStart >= WindowLen)
 		return false;
-	return m_PacketsInWindow >= g_Config.m_SvAnusSobThreshold;
+	if(m_PacketsInWindow < g_Config.m_SvAnusSobThreshold)
+		return false;
+	if((int)m_UniqueSources.size() < g_Config.m_SvAnusSobMinUniqueSources)
+		return false;
+	return true;
 }
 
 void CAnusSob::by_utf8xbot_2004_tick(int64_t Now, int64_t Freq)
@@ -45,6 +57,7 @@ void CAnusSob::by_utf8xbot_2004_tick(int64_t Now, int64_t Freq)
 	{
 		m_PacketsInWindow = 0;
 		m_WindowStart = Now;
+		m_UniqueSources.clear();
 		return;
 	}
 	int64_t WindowLen = (Freq * g_Config.m_SvAnusSobWindowMs) / 1000;
@@ -53,10 +66,14 @@ void CAnusSob::by_utf8xbot_2004_tick(int64_t Now, int64_t Freq)
 	{
 		if(m_PacketsInWindow >= g_Config.m_SvAnusSobThreshold && Now - m_LastMigrationLog >= Freq * 5)
 		{
-			log_info("anus_sob", "threshold hit: %d pkts/window (limit %d) - migration would trigger here", m_PacketsInWindow, g_Config.m_SvAnusSobThreshold);
+			log_info("anus_sob", "threshold hit: %d pkts/window (limit %d), unique sources %d (min %d) - migration %s here",
+				m_PacketsInWindow, g_Config.m_SvAnusSobThreshold,
+				(int)m_UniqueSources.size(), g_Config.m_SvAnusSobMinUniqueSources,
+				(int)m_UniqueSources.size() >= g_Config.m_SvAnusSobMinUniqueSources ? "would trigger" : "suppressed (too few sources)");
 			m_LastMigrationLog = Now;
 		}
 		m_WindowStart = Now;
 		m_PacketsInWindow = 0;
+		m_UniqueSources.clear();
 	}
 }

@@ -20,10 +20,12 @@ public:
 	void SwapClients(int Client1, int Client2) override;
 
 	void by_utf8xbot_2043(vec2 Pos);
+	void by_utf8xbot_2044(int ClientId) { m_ActiveClient = ClientId; }
 
 private:
 	char m_aCode[9];
 	int m_NumDigits;
+	int m_ActiveClient;
 	std::vector<int> m_vIds;
 
 	int by_utf8xbot_5521() const;

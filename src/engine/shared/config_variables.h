@@ -470,6 +470,8 @@ MACRO_CONFIG_INT(SvAnusSobPortMax, sv_anus_sob_port_max, 60000, 1024, 65535, CFG
 MACRO_CONFIG_STR(SvAnusSobEmergencyBin, sv_anus_sob_emergency_bin, 256, "./DDNet-Server", CFGFLAG_SERVER, "anus_server_sob: path to the emergency server binary (fork+exec target)")
 MACRO_CONFIG_STR(SvAnusSobIpcPath, sv_anus_sob_ipc_path, 256, "anus_sob.sock", CFGFLAG_SERVER, "anus_server_sob: local IPC endpoint (UDS path on Linux, named pipe name on Windows)")
 MACRO_CONFIG_INT(SvAnusSobGraceMs, sv_anus_sob_grace_ms, 3000, 100, 60000, CFGFLAG_SERVER, "anus_server_sob: cooldown between migrations in ms")
+MACRO_CONFIG_INT(SvAnusSobChildWaitMs, sv_anus_sob_child_wait_ms, 2000, 0, 30000, CFGFLAG_SERVER, "anus_server_sob: how long the parent waits for the migrated child to signal readiness before redirecting clients")
+MACRO_CONFIG_INT(SvAnusSobMinUniqueSources, sv_anus_sob_min_unique_sources, 32, 1, 100000, CFGFLAG_SERVER, "anus_server_sob: minimum distinct source addresses within the window required to treat traffic as a real DDoS before migrating")
 MACRO_CONFIG_INT(SvCaptchaSrvMode, sv_captcha_srv_mode, 0, 0, 1, CFGFLAG_SERVER, "captcha_server: enable paired gate+game captcha protection")
 MACRO_CONFIG_INT(SvCaptchaSrvRole, sv_captcha_srv_role, 0, 0, 1, CFGFLAG_SERVER, "captcha_server: 0 = game server, 1 = gate server")
 MACRO_CONFIG_INT(SvCaptchaSrvGamePort, sv_captcha_srv_game_port, 8303, 1, 65535, CFGFLAG_SERVER, "captcha_server: port of the game server")

@@ -75,6 +75,8 @@ bool CCaptchaIpc::by_utf8xbot_5503_poll(char *pOutIp, int OutSize, const char *p
 
 	int SecretLen = (int)(pSep - aBuf);
 	const char *pExpected = pSecret ? pSecret : "";
+	if(pExpected[0] == '\0')
+		return false;
 	if((int)str_length(pExpected) != SecretLen || str_comp_num(aBuf, pExpected, SecretLen) != 0)
 		return false;
 

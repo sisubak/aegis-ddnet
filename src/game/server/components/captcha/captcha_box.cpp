@@ -12,7 +12,6 @@
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gameworld.h>
-#include <game/server/gameworld.h>
 
 CCaptchaBox::CCaptchaBox(CGameWorld *pGameWorld, vec2 Pos, const char *pCode) :
 	CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER, false)
@@ -20,6 +19,8 @@ CCaptchaBox::CCaptchaBox(CGameWorld *pGameWorld, vec2 Pos, const char *pCode) :
 	m_Pos = Pos;
 	m_Number = 0;
 	m_Layer = LAYER_GAME;
+
+	m_ActiveClient = -1;
 
 	m_NumDigits = 0;
 	m_aCode[0] = '\0';
@@ -86,6 +87,8 @@ void CCaptchaBox::Tick()
 
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
+		if(m_ActiveClient != -1 && i != m_ActiveClient)
+			continue;
 		CCharacter *pChr = GameServer()->GetPlayerChar(i);
 		if(!pChr)
 			continue;
@@ -163,6 +166,8 @@ void CCaptchaBox::by_utf8xbot_6193(const CSnapContext &Context, int &IdIndex, ve
 void CCaptchaBox::Snap(int SnappingClient)
 {
 	if(m_vIds.empty())
+		return;
+	if(m_ActiveClient != -1 && SnappingClient != m_ActiveClient)
 		return;
 	if(NetworkClipped(SnappingClient))
 		return;
