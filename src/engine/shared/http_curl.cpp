@@ -18,6 +18,15 @@
 
 #include <curl/curl.h>
 
+#if defined(CONF_FAMILY_WINDOWS)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <netinet/in.h>
+#include <sys/socket.h>
+#endif
+
+
 static int CurlDebug(CURL *pHandle, curl_infotype Type, char *pData, size_t DataSize, void *pUser)
 {
 	char TypeChar;
