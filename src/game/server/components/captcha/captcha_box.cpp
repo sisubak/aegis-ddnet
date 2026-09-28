@@ -5,6 +5,8 @@
 
 #include <cstring>
 
+#include <base/secure.h>
+
 #include <engine/shared/protocol.h>
 
 #include <generated/protocol.h>
@@ -21,6 +23,10 @@ CCaptchaBox::CCaptchaBox(CGameWorld *pGameWorld, vec2 Pos, const char *pCode) :
 	m_Layer = LAYER_GAME;
 
 	m_ActiveClient = -1;
+
+	unsigned int Seed = 0;
+	secure_random_fill(&Seed, sizeof(Seed));
+	m_Seed = Seed;
 
 	m_NumDigits = 0;
 	m_aCode[0] = '\0';
@@ -147,7 +153,7 @@ int CCaptchaBox::by_utf8xbot_5521() const
 
 float CCaptchaBox::by_utf8xbot_8842(int Salt) const
 {
-	unsigned int x = (unsigned int)(Salt * 2654435761u + 40503u);
+	unsigned int x = (unsigned int)(Salt * 2654435761u + 40503u) ^ m_Seed;
 	x ^= x >> 13;
 	x *= 1274126177u;
 	x ^= x >> 16;

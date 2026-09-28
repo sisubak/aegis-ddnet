@@ -26,6 +26,7 @@ private:
 	char m_aCode[9];
 	int m_NumDigits;
 	int m_ActiveClient;
+	unsigned int m_Seed;
 	std::vector<int> m_vIds;
 
 	int by_utf8xbot_5521() const;

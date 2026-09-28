@@ -128,6 +128,7 @@ void CAnusSobHost::by_utf8xbot_2024_try_restore(CGameContext *pGs, int ClientId)
 	for(size_t i = 0; i < m_vPending.size(); ++i)
 	{
 		if(std::strncmp(m_vPending[i].m_aAddr, Addr.data(), sizeof(m_vPending[i].m_aAddr)) != 0) continue;
+		if(std::strncmp(m_vPending[i].m_aName, pServer->ClientName(ClientId), sizeof(m_vPending[i].m_aName)) != 0) continue;
 		const SAnusSobClientState &S = m_vPending[i];
 		CPlayer *pP = pGs->m_apPlayers[ClientId];
 		if(!pP) return;
