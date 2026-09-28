@@ -2,6 +2,7 @@
 
 #include <base/log.h>
 #include <base/math.h>
+#include <base/secure.h>
 #include <base/str.h>
 #include <base/time.h>
 #include <engine/server.h>
