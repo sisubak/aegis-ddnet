@@ -1,0 +1,161 @@
+name: Release Servers
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag name for the manual release (e.g. v3b6)"
+        required: true
+        default: "manual-build"
+
+concurrency:
+  group: release-servers-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-server:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            os: ubuntu-22.04
+            cmake-args: -G Ninja
+            artifact: DDNet-Server
+            asset: aegis-server-linux-x86_64
+          - name: windows-x64-msvc
+            os: windows-latest
+            cmake-args: -A x64 -DEXCEPTION_HANDLING=ON
+            artifact: DDNet-Server.exe
+            asset: aegis-server-windows-x64
+          - name: windows-x64-mingw
+            os: windows-latest
+            cmake-args: -G Ninja -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DEXCEPTION_HANDLING=ON -DCMAKE_RC_COMPILER=windres -DCMAKE_AR=ar
+            artifact: DDNet-Server.exe
+            asset: aegis-server-windows-x64-mingw
+          - name: macos-arm64
+            os: macOS-latest
+            cmake-args: -G Ninja
+            artifact: DDNet-Server
+            asset: aegis-server-macos-arm64
+
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        submodules: recursive
+
+    - name: Prepare Linux
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y \
+          cmake \
+          ninja-build \
+          pkg-config \
+          libsqlite3-dev \
+          libssl-dev \
+          libcurl4-openssl-dev \
+          zlib1g-dev
+        rustup default stable
+
+    - name: Prepare macOS
+      if: contains(matrix.os, 'macOS')
+      run: |
+        brew install ninja pkg-config
+        rustup default stable || true
+
+    - name: Prepare Windows (MinGW)
+      if: matrix.name == 'windows-x64-mingw'
+      shell: bash
+      run: |
+        rustup default stable
+
+    - name: Configure
+      run: |
+        mkdir release
+        cd release
+        cmake ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=Release -DCLIENT=OFF -DTOOLS=OFF -DDOWNLOAD_GTEST=OFF -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=. -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=. ..
+
+    - name: Remove outdated libwinpthread (MinGW workaround)
+      if: matrix.name == 'windows-x64-mingw'
+      shell: bash
+      run: |
+        cd release
+        rm -f libwinpthread-1.dll
+
+    - name: Build server
+      run: |
+        cd release
+        cmake --build . --config Release --target game-server -j 2
+
+    - name: Stage artifact (Unix)
+      if: ${{ !contains(matrix.os, 'windows') }}
+      shell: bash
+      run: |
+        cd release
+        mkdir -p pkg
+        cp "${{ matrix.artifact }}" pkg/
+        cp -r ../data pkg/ 2>/dev/null || true
+        tar -C pkg -czf "../${{ matrix.asset }}.tar.gz" .
+
+    - name: Stage artifact (Windows)
+      if: contains(matrix.os, 'windows')
+      shell: pwsh
+      run: |
+        cd release
+        $exe = Get-ChildItem -Recurse -Filter "${{ matrix.artifact }}" | Select-Object -First 1
+        New-Item -ItemType Directory -Force -Path pkg | Out-Null
+        Copy-Item $exe.FullName pkg\
+        if (Test-Path ..\data) { Copy-Item -Recurse ..\data pkg\ }
+        Compress-Archive -Path pkg\* -DestinationPath "..\${{ matrix.asset }}.zip" -Force
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.asset }}
+        path: |
+          ${{ matrix.asset }}.tar.gz
+          ${{ matrix.asset }}.zip
+        if-no-files-found: error
+
+  release:
+    needs: build-server
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: dist
+
+    - name: Flatten artifacts
+      run: |
+        mkdir -p release-assets
+        find dist -type f \( -name "*.tar.gz" -o -name "*.zip" \) -exec cp {} release-assets/ \;
+        ls -la release-assets
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
+        name: Aegis anti-DDoS server ${{ github.event.inputs.release_tag || github.ref_name }}
+        draft: false
+        prerelease: true
+        generate_release_notes: true
+        body: |
+          Automated multi-platform build of the Aegis anti-DDoS DDNet server.
+
+          Assets:
+          - aegis-server-linux-x86_64.tar.gz  (Linux x86_64)
+          - aegis-server-windows-x64.zip      (Windows x64, MSVC)
+          - aegis-server-windows-x64-mingw.zip (Windows x64, MinGW)
+          - aegis-server-macos-arm64.tar.gz   (macOS arm64)
+
+          Each archive contains the DDNet-Server binary plus the data directory.
+        files: release-assets/*
