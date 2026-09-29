@@ -35,11 +35,6 @@ jobs:
             cmake-args: -A x64
             artifact: DDNet-Server.exe
             asset: aegis-server-windows-x64
-          - name: windows-x64-mingw
-            os: windows-latest
-            cmake-args: -G Ninja -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_RC_COMPILER=windres -DCMAKE_AR=ar
-            artifact: DDNet-Server.exe
-            asset: aegis-server-windows-x64-mingw
           - name: macos-arm64
             os: macOS-latest
             cmake-args: -G Ninja
@@ -71,24 +66,11 @@ jobs:
         brew install ninja pkg-config
         rustup default stable || true
 
-    - name: Prepare Windows (MinGW)
-      if: matrix.name == 'windows-x64-mingw'
-      shell: bash
-      run: |
-        rustup default stable
-
     - name: Configure
       run: |
         mkdir release
         cd release
         cmake ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=Release -DCLIENT=OFF -DTOOLS=OFF -DDOWNLOAD_GTEST=OFF -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=. -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=. ..
-
-    - name: Remove outdated libwinpthread (MinGW workaround)
-      if: matrix.name == 'windows-x64-mingw'
-      shell: bash
-      run: |
-        cd release
-        rm -f libwinpthread-1.dll
 
     - name: Build server
       run: |
@@ -154,7 +136,6 @@ jobs:
           Assets:
           - aegis-server-linux-x86_64.tar.gz  (Linux x86_64)
           - aegis-server-windows-x64.zip      (Windows x64, MSVC)
-          - aegis-server-windows-x64-mingw.zip (Windows x64, MinGW)
           - aegis-server-macos-arm64.tar.gz   (macOS arm64)
 
           Each archive contains the DDNet-Server binary plus the data directory.
