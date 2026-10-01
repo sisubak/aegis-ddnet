@@ -158,7 +158,10 @@ bool CCaptchaIpc::by_utf8xbot_5503_poll(char *pOutIp, int OutSize, const char *p
 		SHA256_DIGEST Received;
 		if(sha256_from_str(&Received, pMacHex) != 0)
 			continue;
-		if(Computed != Received)
+		unsigned char Diff = 0;
+		for(size_t i = 0; i < SHA256_DIGEST_LENGTH; i++)
+			Diff |= (unsigned char)(Computed.data[i] ^ Received.data[i]);
+		if(Diff != 0)
 			continue;
 
 		std::string Nonce(pNonce);

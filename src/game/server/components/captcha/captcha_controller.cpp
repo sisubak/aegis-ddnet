@@ -48,11 +48,22 @@ void CCaptchaController::by_utf8xbot_8813_note_fail(CGameContext *pGameServer, i
 	if(!aAddr[0])
 		return;
 
-	if(m_FailByIp.size() > 100000)
-		m_FailByIp.clear();
-
 	int64_t Now = time_timestamp();
 	int Window = g_Config.m_SvCaptchaSrvFailWindowSec;
+
+	if(m_FailByIp.size() > 50000)
+	{
+		for(auto It = m_FailByIp.begin(); It != m_FailByIp.end();)
+		{
+			if((Now - It->second.m_WindowStart) >= (int64_t)Window)
+				It = m_FailByIp.erase(It);
+			else
+				++It;
+		}
+		if(m_FailByIp.size() > 50000)
+			m_FailByIp.clear();
+	}
+
 	SCaptchaFail &F = m_FailByIp[aAddr];
 	if(F.m_Count == 0 || (Now - F.m_WindowStart) >= (int64_t)Window)
 	{
