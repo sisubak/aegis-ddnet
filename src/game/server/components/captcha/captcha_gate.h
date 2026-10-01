@@ -28,8 +28,6 @@ public:
 	int by_utf8xbot_1927(int ClientId) const;
 	int by_utf8xbot_5061(int64_t Now, int64_t Freq);
 	const char *by_utf8xbot_3348();
-	void by_utf8xbot_7702(const char *pPath, const char *pIp);
-	bool by_utf8xbot_9915(const char *pPath, const char *pIp);
 };
 
 #endif

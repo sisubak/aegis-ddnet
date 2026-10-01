@@ -1792,7 +1792,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 	{
 		char aWlAddr[NETADDR_MAXSTRSIZE];
 		net_addr_str(&pPacket->m_Address, aWlAddr, sizeof(aWlAddr), false);
-		if(!CCaptchaSession::by_utf8xbot_L(g_Config.m_SvCaptchaSrvIpcPath, aWlAddr))
+		if(!CCaptchaSession::by_utf8xbot_L(g_Config.m_SvCaptchaSrvIpcPath, aWlAddr, time_timestamp(), g_Config.m_SvCaptchaSrvWhitelistTtlSec))
 			return;
 	}
 

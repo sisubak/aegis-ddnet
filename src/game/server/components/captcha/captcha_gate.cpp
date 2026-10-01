@@ -118,13 +118,3 @@ const char *CCaptchaGate::by_utf8xbot_3348()
 {
 	return m_Session.by_utf8xbot_I();
 }
-
-void CCaptchaGate::by_utf8xbot_7702(const char *pPath, const char *pIp)
-{
-	CCaptchaSession::by_utf8xbot_K(pPath, pIp);
-}
-
-bool CCaptchaGate::by_utf8xbot_9915(const char *pPath, const char *pIp)
-{
-	return CCaptchaSession::by_utf8xbot_L(pPath, pIp);
-}

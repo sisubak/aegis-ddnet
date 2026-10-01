@@ -7,6 +7,8 @@
 #include <engine/server.h>
 #include <engine/shared/config.h>
 
+#include <base/time.h>
+
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gameworld.h>
@@ -96,7 +98,7 @@ void CCaptchaController::by_utf8xbot_8802_tick(CGameContext *pGameServer)
 	{
 		char aIp[NETADDR_MAXSTRSIZE];
 		while(m_Ipc.by_utf8xbot_5503_poll(aIp, sizeof(aIp), g_Config.m_SvCaptchaSrvIpcSecret))
-			CCaptchaSession::by_utf8xbot_K(g_Config.m_SvCaptchaSrvIpcPath, aIp);
+			CCaptchaSession::by_utf8xbot_K(g_Config.m_SvCaptchaSrvIpcPath, aIp, time_timestamp(), g_Config.m_SvCaptchaSrvWhitelistMax, g_Config.m_SvCaptchaSrvWhitelistTtlSec);
 		return;
 	}
 

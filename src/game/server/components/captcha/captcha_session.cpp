@@ -4,7 +4,8 @@
 #include <base/secure.h>
 
 #include <string>
-#include <unordered_set>
+#include <unordered_map>
+#include <vector>
 
 CCaptchaSession::CCaptchaSession()
 {
@@ -129,24 +130,88 @@ int CCaptchaSession::by_utf8xbot_J(int64_t Now, int64_t Freq)
 	return (int)Shown;
 }
 
-void CCaptchaSession::by_utf8xbot_K(const char *pPath, const char *pIp)
+namespace {
+struct SWlEntry
 {
-	if(!pPath || !pIp)
-		return;
-	FILE *pFile = fopen(pPath, "a");
+	std::string m_Ip;
+	int64_t m_Ts;
+};
+
+void by_utf8xbot_8120_read_entries(const char *pPath, std::vector<SWlEntry> &vOut)
+{
+	vOut.clear();
+	FILE *pFile = fopen(pPath, "r");
 	if(!pFile)
 		return;
-	fputs(pIp, pFile);
-	fputc('\n', pFile);
+	char aLine[256];
+	while(fgets(aLine, sizeof(aLine), pFile))
+	{
+		int Len = (int)strlen(aLine);
+		while(Len > 0 && (aLine[Len - 1] == '\n' || aLine[Len - 1] == '\r' || aLine[Len - 1] == ' ' || aLine[Len - 1] == '\t'))
+			aLine[--Len] = 0;
+		if(Len <= 0)
+			continue;
+		char *pSpace = strchr(aLine, ' ');
+		SWlEntry Entry;
+		if(pSpace)
+		{
+			*pSpace = 0;
+			Entry.m_Ip = aLine;
+			Entry.m_Ts = (int64_t)strtoll(pSpace + 1, nullptr, 10);
+		}
+		else
+		{
+			Entry.m_Ip = aLine;
+			Entry.m_Ts = 0;
+		}
+		if(!Entry.m_Ip.empty())
+			vOut.push_back(Entry);
+	}
+	fclose(pFile);
+}
+}
+
+void CCaptchaSession::by_utf8xbot_K(const char *pPath, const char *pIp, int64_t NowUnix, int MaxEntries, int TtlSec)
+{
+	if(!pPath || !pIp || !*pIp)
+		return;
+
+	std::vector<SWlEntry> vEntries;
+	by_utf8xbot_8120_read_entries(pPath, vEntries);
+
+	std::vector<SWlEntry> vKept;
+	vKept.reserve(vEntries.size() + 1);
+	for(const SWlEntry &E : vEntries)
+	{
+		if(E.m_Ip == pIp)
+			continue;
+		if(TtlSec > 0 && (NowUnix - E.m_Ts) > (int64_t)TtlSec)
+			continue;
+		vKept.push_back(E);
+	}
+
+	SWlEntry New;
+	New.m_Ip = pIp;
+	New.m_Ts = NowUnix;
+	vKept.push_back(New);
+
+	if(MaxEntries > 0 && (int)vKept.size() > MaxEntries)
+		vKept.erase(vKept.begin(), vKept.begin() + ((int)vKept.size() - MaxEntries));
+
+	FILE *pFile = fopen(pPath, "w");
+	if(!pFile)
+		return;
+	for(const SWlEntry &E : vKept)
+		fprintf(pFile, "%s %lld\n", E.m_Ip.c_str(), (long long)E.m_Ts);
 	fclose(pFile);
 }
 
-bool CCaptchaSession::by_utf8xbot_L(const char *pPath, const char *pIp)
+bool CCaptchaSession::by_utf8xbot_L(const char *pPath, const char *pIp, int64_t NowUnix, int TtlSec)
 {
 	if(!pPath || !pIp)
 		return false;
 
-	static std::unordered_set<std::string> s_Whitelist;
+	static std::unordered_map<std::string, int64_t> s_Whitelist;
 	static std::string s_LoadedPath;
 	static time_t s_LoadedMtime = 0;
 	static bool s_Loaded = false;
@@ -157,25 +222,20 @@ bool CCaptchaSession::by_utf8xbot_L(const char *pPath, const char *pIp)
 	if(!s_Loaded || s_LoadedPath != pPath || !StatOk || Modified != s_LoadedMtime)
 	{
 		s_Whitelist.clear();
-		FILE *pFile = fopen(pPath, "r");
-		if(pFile)
-		{
-			char aLine[256];
-			while(fgets(aLine, sizeof(aLine), pFile))
-			{
-				int Len = (int)strlen(aLine);
-				while(Len > 0 && (aLine[Len - 1] == '\n' || aLine[Len - 1] == '\r' || aLine[Len - 1] == ' ' || aLine[Len - 1] == '\t'))
-					aLine[--Len] = 0;
-				if(Len > 0)
-					s_Whitelist.insert(std::string(aLine));
-			}
-			fclose(pFile);
-		}
+		std::vector<SWlEntry> vEntries;
+		by_utf8xbot_8120_read_entries(pPath, vEntries);
+		for(const SWlEntry &E : vEntries)
+			s_Whitelist[E.m_Ip] = E.m_Ts;
 		s_LoadedPath = pPath;
 		s_LoadedMtime = StatOk ? Modified : 0;
 		s_Loaded = true;
 	}
 
-	return s_Whitelist.find(std::string(pIp)) != s_Whitelist.end();
+	auto It = s_Whitelist.find(std::string(pIp));
+	if(It == s_Whitelist.end())
+		return false;
+	if(TtlSec > 0 && (NowUnix - It->second) > (int64_t)TtlSec)
+		return false;
+	return true;
 }
 

@@ -31,8 +31,8 @@ public:
 	const char *by_utf8xbot_I();
 	int by_utf8xbot_J(int64_t Now, int64_t Freq);
 
-	static void by_utf8xbot_K(const char *pPath, const char *pIp);
-	static bool by_utf8xbot_L(const char *pPath, const char *pIp);
+	static void by_utf8xbot_K(const char *pPath, const char *pIp, int64_t NowUnix, int MaxEntries, int TtlSec);
+	static bool by_utf8xbot_L(const char *pPath, const char *pIp, int64_t NowUnix, int TtlSec);
 };
 
 #endif
