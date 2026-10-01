@@ -3504,6 +3504,12 @@ int CServer::Run()
 
 	m_AuthManager.Init();
 
+	if(g_Config.m_SvCaptchaSrvMode && g_Config.m_SvCaptchaSrvIpcSecret[0] == '\0')
+	{
+		log_error("server", "sv_captcha_srv_mode is on but sv_captcha_srv_ipc_secret is empty; refusing to start without IPC authentication");
+		return -1;
+	}
+
 	if(Config()->m_Debug)
 	{
 		g_UuidManager.DebugDump();
