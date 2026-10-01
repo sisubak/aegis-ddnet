@@ -3,6 +3,11 @@
 
 #include <base/net.h>
 
+#include <cstdint>
+#include <deque>
+#include <string>
+#include <unordered_set>
+
 class CCaptchaIpc
 {
 public:
@@ -17,6 +22,10 @@ public:
 private:
 	NETSOCKET m_Socket;
 	bool m_Open;
+	int64_t m_RateWindowStart;
+	int m_RateCount;
+	std::deque<std::string> m_vNonceOrder;
+	std::unordered_set<std::string> m_NonceSeen;
 };
 
 #endif
