@@ -5,7 +5,7 @@
 Анти-DDoS сервер на базе DDNet
 
 ![status](https://img.shields.io/badge/status-alpha-red)
-![version](https://img.shields.io/badge/release-v4-blueviolet)
+![version](https://img.shields.io/badge/release-v5-blueviolet)
 ![ddnet](https://img.shields.io/badge/DDNet-20.2-blue)
 ![base](https://img.shields.io/badge/base-ddnet%20fork-blue)
 ![protection](https://img.shields.io/badge/protection-anti--DDoS-red)
@@ -115,4 +115,4 @@
 
 ## Статус
 
-Проект находится в стадии альфа-тестирования (текущий релиз v4, база DDNet 20.2). Часть конфигов временные и могут быть неполными, поведение сервера может меняться без предупреждения.
+Проект находится в стадии альфа-тестирования (текущий релиз v5, база DDNet 20.2). Часть конфигов временные и могут быть неполными, поведение сервера может меняться без предупреждения.

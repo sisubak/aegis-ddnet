@@ -538,7 +538,7 @@ MACRO_CONFIG_INT(SvSixup, sv_sixup, 1, 0, 1, CFGFLAG_SERVER, "Enable sixup conne
 MACRO_CONFIG_INT(SvSkillLevel, sv_skill_level, 1, SERVERINFO_LEVEL_MIN, SERVERINFO_LEVEL_MAX, CFGFLAG_SERVER, "Difficulty level for Teeworlds 0.7 (0: Casual, 1: Normal, 2: Competitive)")
 MACRO_CONFIG_INT(SvVersionCheck, sv_version_check, 1, 0, 1, CFGFLAG_SERVER, "Periodically check GitHub for a newer server release and warn rcon admins")
 MACRO_CONFIG_STR(SvVersionCheckUrl, sv_version_check_url, 256, "https://api.github.com/repos/sisubak/aegis-ddnet/tags", CFGFLAG_SERVER, "URL returning releases as GitHub JSON (tags array with name, or a single object with tag_name)")
-MACRO_CONFIG_STR(SvVersionCurrent, sv_version_current, 64, "v4", CFGFLAG_SERVER, "This server's current release tag, compared against the latest tag from sv_version_check_url")
+MACRO_CONFIG_STR(SvVersionCurrent, sv_version_current, 64, "v5", CFGFLAG_SERVER, "This server's current release tag, compared against the latest tag from sv_version_check_url")
 
 
 MACRO_CONFIG_STR(EcBindaddr, ec_bindaddr, 128, "localhost", CFGFLAG_ECON, "Address to bind the external console to. Anything but 'localhost' is dangerous")
