@@ -1,3 +1,4 @@
+# Coded by ueha
 name: Release Servers
 
 on:
@@ -19,7 +20,52 @@ permissions:
   contents: write
 
 jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            os: ubuntu-22.04
+            cmake-args: -G Ninja
+          - name: windows-x64-msvc
+            os: windows-latest
+            cmake-args: -A x64
+
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        submodules: recursive
+
+    - name: Prepare Linux
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y \
+          cmake \
+          ninja-build \
+          pkg-config \
+          libpng-dev \
+          libsqlite3-dev \
+          libssl-dev \
+          libcurl4-openssl-dev \
+          zlib1g-dev
+        rustup default stable
+
+    - name: Configure
+      run: |
+        mkdir build
+        cd build
+        cmake ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=Release -DCLIENT=OFF -DTOOLS=OFF -DDOWNLOAD_GTEST=ON -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=. -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=. ..
+
+    - name: Build and run unit tests
+      run: |
+        cd build
+        cmake --build . --config Release --target run_tests
+
   build-server:
+    needs: tests
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
