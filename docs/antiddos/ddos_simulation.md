@@ -54,7 +54,7 @@ ban_changes.md) держат удар по крашам разбора и dbg_as
 
 ## Как запустить
 
-    cd C:\Users\WWWWWUeHaA\Desktop\antiddos\ddos_sim
+    cd <корень репозитория>/ddos_sim
     run_sim.bat
 
 либо вручную:
