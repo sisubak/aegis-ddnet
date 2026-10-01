@@ -657,30 +657,29 @@ bool CServer::StrHideIps(const char *pInput, char *pOutputWithIps, size_t Output
 	pOutputWithIps[0] = '\0';
 	pOutputWithoutIps[0] = '\0';
 
-	bool Redacted = false;
-	const char *pCursor = pInput;
-	while(true)
+	const char *pStart = str_find(pInput, "<{");
+	const char *pEnd = pStart == nullptr ? nullptr : str_find(pStart + 2, "}>");
+	if(pStart == nullptr || pEnd == nullptr)
 	{
-		const char *pStart = str_find(pCursor, "<{");
-		const char *pEnd = pStart == nullptr ? nullptr : str_find(pStart + 2, "}>");
-		if(pStart == nullptr || pEnd == nullptr)
-		{
-			str_append(pOutputWithIps, pCursor, OutputWithIpsSize);
-			str_append(pOutputWithoutIps, pCursor, OutputWithoutIpsSize);
-			break;
-		}
-
-		Redacted = true;
-
-		str_append(pOutputWithIps, pCursor, std::min((size_t)(pStart - pCursor + 1), OutputWithIpsSize));
-		str_append(pOutputWithoutIps, pCursor, std::min((size_t)(pStart - pCursor + 1), OutputWithoutIpsSize));
-
-		str_append(pOutputWithIps, pStart + 2, std::min((size_t)(pEnd - pStart - 1), OutputWithIpsSize));
-		str_append(pOutputWithoutIps, "XXX", OutputWithoutIpsSize);
-
-		pCursor = pEnd + 2;
+		str_copy(pOutputWithIps, pInput, OutputWithIpsSize);
+		str_copy(pOutputWithoutIps, pInput, OutputWithoutIpsSize);
+		return false;
 	}
-	return Redacted;
+
+	const size_t PrefixLen = (size_t)(pStart - pInput);
+	const char *pInner = pStart + 2;
+	const size_t InnerLen = (size_t)(pEnd - pInner);
+	const char *pSuffix = pEnd + 2;
+
+	str_append(pOutputWithIps, pInput, std::min(PrefixLen + 1, OutputWithIpsSize));
+	str_append(pOutputWithIps, pInner, std::min((size_t)str_length(pOutputWithIps) + InnerLen + 1, OutputWithIpsSize));
+	str_append(pOutputWithIps, pSuffix, OutputWithIpsSize);
+
+	str_append(pOutputWithoutIps, pInput, std::min(PrefixLen + 1, OutputWithoutIpsSize));
+	str_append(pOutputWithoutIps, "XXX", OutputWithoutIpsSize);
+	str_append(pOutputWithoutIps, pSuffix, OutputWithoutIpsSize);
+
+	return true;
 }
 
 void CServer::SendLogLine(const CLogMessage *pMessage)
