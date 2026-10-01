@@ -1,0 +1,8 @@
+# Coded by ueha
+# Секреты и рантайм-состояние деплоя — не коммитить.
+.env
+*.db
+captcha_whitelist.txt
+DDNet-Server
+DDNet-Server.exe
+/data/

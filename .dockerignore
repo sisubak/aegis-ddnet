@@ -1,0 +1,16 @@
+# Coded by ueha
+# Урезаем контекст docker build (deploy/Dockerfile) до нужного для сборки.
+.git
+build/
+aegis-server-v3b6/
+audit_ddos/
+audit_reports/
+_audit/
+ddos_sim/
+*.rar
+*.zip
+*.log
+*.pid
+*.db
+REPORT_test_*.txt
+claude_fix_prompt.md

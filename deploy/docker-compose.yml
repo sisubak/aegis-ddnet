@@ -1,0 +1,31 @@
+# Coded by ueha
+# Поднимает пару gate+game одной командой: docker compose up -d --build
+# gate делит сетевой namespace с game, поэтому loopback-IPC (127.0.0.1:8305)
+# между ними работает как на одной машине. Публичные порты: 8304 (вход через
+# капчу) и 8303 (игровой, редирект после капчи) — оба на контейнере game.
+services:
+  game:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    command:
+      - "exec server.cfg"
+      - "sv_captcha_srv_ipc_secret ${AEGIS_IPC_SECRET:?set AEGIS_IPC_SECRET in .env}"
+      - "sv_rcon_password ${AEGIS_RCON_PASSWORD:?set AEGIS_RCON_PASSWORD in .env}"
+    ports:
+      - "8303:8303/udp"
+      - "8304:8304/udp"
+    restart: unless-stopped
+
+  gate:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    network_mode: "service:game"
+    command:
+      - "exec gate.cfg"
+      - "sv_captcha_srv_ipc_secret ${AEGIS_IPC_SECRET:?set AEGIS_IPC_SECRET in .env}"
+      - "sv_rcon_password ${AEGIS_RCON_PASSWORD:?set AEGIS_RCON_PASSWORD in .env}"
+    depends_on:
+      - game
+    restart: unless-stopped
