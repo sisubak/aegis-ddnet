@@ -2443,12 +2443,15 @@ bool CServer::RateLimitServerInfoConnlessAddr(const NETADDR *pAddr)
 	CServerInfoRateLimit &Bucket = m_aServerInfoRateLimit[Hash % SERVERINFO_IP_BUCKETS];
 
 	const int64_t Now = time_get();
-	if(net_addr_comp(&Bucket.m_Addr, &Key) != 0 || Now > Bucket.m_WindowStart + time_freq())
+	if(Now > Bucket.m_WindowStart + time_freq())
 	{
-		// New source for this bucket (or window expired): reset the counter.
 		Bucket.m_Addr = Key;
 		Bucket.m_WindowStart = Now;
 		Bucket.m_Count = 0;
+	}
+	else if(net_addr_comp(&Bucket.m_Addr, &Key) != 0)
+	{
+		Bucket.m_Addr = Key;
 	}
 	Bucket.m_Count++;
 
@@ -3213,8 +3216,12 @@ void CServer::PumpNetwork()
 							continue;
 						}
 
+						if(!RateLimitServerInfoConnlessAddr(&Packet.m_Address))
+						{
+							continue;
+						}
 						const std::optional<bool> SendClients = RateLimitServerInfoConnless();
-						if(!SendClients.has_value() || !RateLimitServerInfoConnlessAddr(&Packet.m_Address))
+						if(!SendClients.has_value())
 						{
 							continue;
 						}
@@ -3239,8 +3246,12 @@ void CServer::PumpNetwork()
 							continue;
 						}
 
+						if(!RateLimitServerInfoConnlessAddr(&Packet.m_Address))
+						{
+							continue;
+						}
 						const std::optional<bool> SendClients = RateLimitServerInfoConnless();
-						if(!SendClients.has_value() || !RateLimitServerInfoConnlessAddr(&Packet.m_Address))
+						if(!SendClients.has_value())
 						{
 							continue;
 						}

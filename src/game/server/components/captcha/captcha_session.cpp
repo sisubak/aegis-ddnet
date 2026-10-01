@@ -215,20 +215,26 @@ bool CCaptchaSession::by_utf8xbot_L(const char *pPath, const char *pIp, int64_t 
 	static std::string s_LoadedPath;
 	static time_t s_LoadedMtime = 0;
 	static bool s_Loaded = false;
+	static int64_t s_LastCheck = 0;
 
-	time_t Modified = 0;
-	bool StatOk = fs_file_time(pPath, nullptr, &Modified) == 0;
-
-	if(!s_Loaded || s_LoadedPath != pPath || !StatOk || Modified != s_LoadedMtime)
+	if(!s_Loaded || s_LoadedPath != pPath || NowUnix > s_LastCheck)
 	{
-		s_Whitelist.clear();
-		std::vector<SWlEntry> vEntries;
-		by_utf8xbot_8120_read_entries(pPath, vEntries);
-		for(const SWlEntry &E : vEntries)
-			s_Whitelist[E.m_Ip] = E.m_Ts;
-		s_LoadedPath = pPath;
-		s_LoadedMtime = StatOk ? Modified : 0;
-		s_Loaded = true;
+		s_LastCheck = NowUnix;
+
+		time_t Modified = 0;
+		bool StatOk = fs_file_time(pPath, nullptr, &Modified) == 0;
+
+		if(!s_Loaded || s_LoadedPath != pPath || !StatOk || Modified != s_LoadedMtime)
+		{
+			s_Whitelist.clear();
+			std::vector<SWlEntry> vEntries;
+			by_utf8xbot_8120_read_entries(pPath, vEntries);
+			for(const SWlEntry &E : vEntries)
+				s_Whitelist[E.m_Ip] = E.m_Ts;
+			s_LoadedPath = pPath;
+			s_LoadedMtime = StatOk ? Modified : 0;
+			s_Loaded = true;
+		}
 	}
 
 	auto It = s_Whitelist.find(std::string(pIp));

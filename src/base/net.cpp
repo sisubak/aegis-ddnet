@@ -1190,6 +1190,7 @@ int net_udp_recv(NETSOCKET sock, NETADDR *addr, unsigned char **data)
 #else
 	if(sock->ipv4sock >= 0)
 	{
+		int zero_skips = 0;
 		do
 		{
 			sockaddr_storage recv_addr;
@@ -1202,11 +1203,12 @@ int net_udp_recv(NETSOCKET sock, NETADDR *addr, unsigned char **data)
 				update_stats(bytes);
 				return bytes;
 			}
-		} while(bytes == 0);
+		} while(bytes == 0 && ++zero_skips < 64);
 	}
 
 	if(sock->ipv6sock >= 0)
 	{
+		int zero_skips = 0;
 		do
 		{
 			sockaddr_storage recv_addr;
@@ -1219,7 +1221,7 @@ int net_udp_recv(NETSOCKET sock, NETADDR *addr, unsigned char **data)
 				update_stats(bytes);
 				return bytes;
 			}
-		} while(bytes == 0);
+		} while(bytes == 0 && ++zero_skips < 64);
 	}
 #endif
 

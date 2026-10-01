@@ -322,6 +322,7 @@ void CRegister::CProtocol::SendRegister()
 	pRegister->LogProgress(HTTPLOG::FAILURE);
 	pRegister->IpResolve(ProtocolToIpresolve(m_Protocol));
 	pRegister->FailOnErrorStatus(false);
+	pRegister->MaxResponseSize(1024 * 1024);
 
 	int RequestIndex;
 	{
@@ -369,6 +370,7 @@ void CRegister::CProtocol::SendDeleteIfRegistered(bool Shutdown)
 	FormatUuid(m_pParent->m_Secret, aSecret, sizeof(aSecret));
 
 	std::shared_ptr<IHttpRequest> pDelete = HttpPost(m_pParent->m_pConfig->m_SvRegisterUrl, (const unsigned char *)"", 0);
+	pDelete->MaxResponseSize(1024 * 1024);
 	pDelete->HeaderString("Action", "delete");
 	pDelete->HeaderString("Address", aAddress);
 	pDelete->HeaderString("Secret", aSecret);

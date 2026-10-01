@@ -2254,6 +2254,9 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 	if(!pRawMsg)
 		return;
 
+	if(g_Config.m_SvCaptchaSrvMode && g_Config.m_SvCaptchaSrvRole == 1 && MsgId != NETMSGTYPE_CL_SAY && MsgId != NETMSGTYPE_CL_STARTINFO)
+		return;
+
 	if(Server()->ClientIngame(ClientId))
 	{
 		switch(MsgId)
