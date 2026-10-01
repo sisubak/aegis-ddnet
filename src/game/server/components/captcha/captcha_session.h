@@ -33,6 +33,14 @@ public:
 
 	static void by_utf8xbot_K(const char *pPath, const char *pIp, int64_t NowUnix, int MaxEntries, int TtlSec);
 	static bool by_utf8xbot_L(const char *pPath, const char *pIp, int64_t NowUnix, int TtlSec);
+
+	enum
+	{
+		GATE_PASS = 0,
+		GATE_DROP,
+		GATE_KICK,
+	};
+	static int by_utf8xbot_7731_gate_packet(const char *pPath, const char *pIp, int64_t NowUnix, int TtlSec, int64_t Now, int64_t Freq, int64_t *pGraceSince);
 };
 
 #endif

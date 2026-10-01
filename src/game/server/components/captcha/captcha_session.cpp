@@ -245,3 +245,26 @@ bool CCaptchaSession::by_utf8xbot_L(const char *pPath, const char *pIp, int64_t 
 	return true;
 }
 
+int CCaptchaSession::by_utf8xbot_7731_gate_packet(const char *pPath, const char *pIp, int64_t NowUnix, int TtlSec, int64_t Now, int64_t Freq, int64_t *pGraceSince)
+{
+	if(by_utf8xbot_L(pPath, pIp, NowUnix, TtlSec))
+	{
+		if(pGraceSince)
+			*pGraceSince = 0;
+		return GATE_PASS;
+	}
+	if(!pGraceSince)
+		return GATE_DROP;
+	if(*pGraceSince == 0)
+	{
+		*pGraceSince = Now;
+		return GATE_DROP;
+	}
+	if(Now - *pGraceSince > Freq * 3)
+	{
+		*pGraceSince = 0;
+		return GATE_KICK;
+	}
+	return GATE_DROP;
+}
+
