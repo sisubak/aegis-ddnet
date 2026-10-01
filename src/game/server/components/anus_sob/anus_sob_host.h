@@ -17,6 +17,7 @@ class CAnusSobHost
 	bool by_utf8xbot_2021_write_state_file(const char *pPath, const std::vector<SAnusSobClientState> &St);
 	bool by_utf8xbot_2022_read_state_file(const char *pPath, std::vector<SAnusSobClientState> &Out);
 	bool by_utf8xbot_2023_load_from_env();
+	void by_utf8xbot_2027_cleanup_stale();
 	void by_utf8xbot_2024_try_restore(CGameContext *pGs, int ClientId);
 	int  by_utf8xbot_2025_pending_count() const { return (int)m_vPending.size(); }
 	void by_utf8xbot_2026_clear_pending() { m_vPending.clear(); }

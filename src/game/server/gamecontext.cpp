@@ -4168,6 +4168,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 	const CPersistentData *pPersistent = (const CPersistentData *)pPersistentData;
 
 	m_pServer = Kernel()->RequestInterface<IServer>();
+	m_AnusSobHost.by_utf8xbot_2027_cleanup_stale();
 	m_AnusSobHost.by_utf8xbot_2023_load_from_env();
 	m_pConfigManager = Kernel()->RequestInterface<IConfigManager>();
 	m_pConfig = m_pConfigManager->Values();

@@ -3581,6 +3581,8 @@ int CServer::Run()
 				g_Config.m_SvPort = P;
 				log_info("anus_sob", "child overriding sv_port to %d via env", P);
 			}
+			str_copy(g_Config.m_SvRegister, "0", sizeof(g_Config.m_SvRegister));
+			log_info("anus_sob", "child disabling sv_register so the emergency port is not re-published to the master list");
 		}
 	}
 	int Port = Config()->m_SvPort;

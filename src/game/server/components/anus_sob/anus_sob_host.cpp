@@ -360,3 +360,29 @@ void CAnusSobHost::by_utf8xbot_2032_tick(CGameContext *pGs)
 	(void)pGs;
 #endif
 }
+
+void CAnusSobHost::by_utf8xbot_2027_cleanup_stale()
+{
+#if defined(CONF_FAMILY_UNIX)
+	DIR *pDir = opendir("/tmp");
+	if(!pDir) return;
+	int64_t Now = time_timestamp();
+	struct dirent *pEnt;
+	while((pEnt = readdir(pDir)) != nullptr)
+	{
+		if(std::strncmp(pEnt->d_name, "anus_sob_", 9) != 0) continue;
+		size_t Len = std::strlen(pEnt->d_name);
+		if(Len < 6 || std::strcmp(pEnt->d_name + Len - 6, ".state") != 0) continue;
+		char aPath[512];
+		std::snprintf(aPath, sizeof(aPath), "/tmp/%s", pEnt->d_name);
+		struct stat St;
+		if(stat(aPath, &St) != 0) continue;
+		if((Now - (int64_t)St.st_mtime) > 3600)
+		{
+			std::remove(aPath);
+			log_info("anus_sob", "removed stale migration state '%s'", aPath);
+		}
+	}
+	closedir(pDir);
+#endif
+}
