@@ -159,6 +159,8 @@ public:
 		int64_t m_PingWindowSince;
 		int m_PingRepliesInWindow;
 
+		int64_t m_CaptchaGraceSince;
+
 		int m_LastAckedSnapshot;
 		int m_LastInputTick;
 		CSnapshotStorage m_Snapshots;

@@ -256,6 +256,7 @@ void CServer::CClient::Reset()
 	m_IngameBeforeRejoin = false;
 	m_PingWindowSince = 0;
 	m_PingRepliesInWindow = 0;
+	m_CaptchaGraceSince = 0;
 
 	std::fill(std::begin(m_aIdMap), std::end(m_aIdMap), -1);
 	std::fill(std::begin(m_aReverseIdMap), std::end(m_aReverseIdMap), -1);
@@ -1793,7 +1794,23 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 		char aWlAddr[NETADDR_MAXSTRSIZE];
 		net_addr_str(&pPacket->m_Address, aWlAddr, sizeof(aWlAddr), false);
 		if(!CCaptchaSession::by_utf8xbot_L(g_Config.m_SvCaptchaSrvIpcPath, aWlAddr, time_timestamp(), g_Config.m_SvCaptchaSrvWhitelistTtlSec))
+		{
+			if(ClientId >= 0 && ClientId < MAX_CLIENTS)
+			{
+				CClient &WlClient = m_aClients[ClientId];
+				int64_t Now = time_get();
+				if(WlClient.m_CaptchaGraceSince == 0)
+					WlClient.m_CaptchaGraceSince = Now;
+				else if(Now - WlClient.m_CaptchaGraceSince > time_freq() * 3)
+				{
+					m_NetServer.Drop(ClientId, "Этот порт только для прошедших капчу. Зайди через gate-порт.");
+					WlClient.m_CaptchaGraceSince = 0;
+				}
+			}
 			return;
+		}
+		if(ClientId >= 0 && ClientId < MAX_CLIENTS)
+			m_aClients[ClientId].m_CaptchaGraceSince = 0;
 	}
 
 	CUnpacker Unpacker;
