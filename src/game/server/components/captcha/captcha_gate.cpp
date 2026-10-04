@@ -1,5 +1,7 @@
 #include "captcha_gate.h"
 
+#include <algorithm>
+
 CCaptchaGate::CCaptchaGate()
 {
 	m_NumDigits = 6;
@@ -14,12 +16,7 @@ bool CCaptchaGate::by_utf8xbot_9056_valid(int ClientId) const
 
 bool CCaptchaGate::by_utf8xbot_9057_in_queue(int ClientId) const
 {
-	for(int QueuedClient : m_Queue)
-	{
-		if(QueuedClient == ClientId)
-			return true;
-	}
-	return false;
+	return std::ranges::any_of(m_Queue, [ClientId](int QueuedClient) { return QueuedClient == ClientId; });
 }
 
 void CCaptchaGate::by_utf8xbot_9058_start(int ClientId, int64_t Now)
