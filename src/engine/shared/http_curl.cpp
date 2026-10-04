@@ -88,7 +88,7 @@ static bool by_utf8xhttp_4472_is_blocked_ipv6(const unsigned char *pAddr)
 	return false;
 }
 
-static int by_utf8xhttp_4473_opensocket(void *pUser, curlsocktype Purpose, struct curl_sockaddr *pAddr)
+static curl_socket_t by_utf8xhttp_4473_opensocket(void *pUser, curlsocktype Purpose, struct curl_sockaddr *pAddr)
 {
 	(void)pUser;
 	(void)Purpose;
@@ -105,7 +105,7 @@ static int by_utf8xhttp_4473_opensocket(void *pUser, curlsocktype Purpose, struc
 		if(by_utf8xhttp_4472_is_blocked_ipv6((const unsigned char *)&pIn6->sin6_addr))
 			return CURL_SOCKET_BAD;
 	}
-	return (int)socket(pAddr->family, pAddr->socktype, pAddr->protocol);
+	return socket(pAddr->family, pAddr->socktype, pAddr->protocol);
 }
 
 CHttpRequestCurl::CHttpRequestCurl(const char *pUrl) :

@@ -3605,8 +3605,8 @@ int CServer::Run()
 			int Fd = atoi(pReadyFd);
 			if(Fd > 2)
 			{
-				const char Byte = 1;
-				ssize_t Written = write(Fd, &Byte, 1);
+				const char ReadyByte = 1;
+				ssize_t Written = write(Fd, &ReadyByte, 1);
 				(void)Written;
 				close(Fd);
 			}
