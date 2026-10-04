@@ -2,9 +2,9 @@
 
 #include <base/str.h>
 
-#include <gtest/gtest.h>
-
 #include <game/server/components/anus_sob/anus_sob_state.h>
+
+#include <gtest/gtest.h>
 
 #include <cstring>
 #include <vector>
@@ -69,4 +69,15 @@ TEST(AnusSobState, RejectsCorruptMagic)
 
 	std::vector<unsigned char> Empty;
 	EXPECT_FALSE(CAnusSobStateCodec::by_utf8xbot_2201_unpack(Empty, Out));
+}
+
+TEST(AnusSobState, RejectsTrailingData)
+{
+	std::vector<SAnusSobClientState> In;
+	std::vector<unsigned char> Buf;
+	CAnusSobStateCodec::by_utf8xbot_2200_pack(In, Buf);
+	Buf.push_back(0);
+
+	std::vector<SAnusSobClientState> Out;
+	EXPECT_FALSE(CAnusSobStateCodec::by_utf8xbot_2201_unpack(Buf, Out));
 }

@@ -2,8 +2,8 @@
 #define GAME_SERVER_COMPONENTS_CAPTCHA_CAPTCHA_HUD_H
 
 #include <cstdint>
-#include <cstring>
 #include <cstdio>
+#include <cstring>
 
 class CCaptchaHud
 {

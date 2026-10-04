@@ -7,8 +7,6 @@
 #include "databases/connection_pool.h"
 #include "register.h"
 
-#include <game/server/components/anus_sob/anus_sob.h>
-
 #include <base/bytes.h>
 #include <base/fs.h>
 #include <base/io.h>
@@ -44,6 +42,7 @@
 #include <engine/shared/snapshot.h>
 #include <engine/storage.h>
 
+#include <game/server/components/anus_sob/anus_sob.h>
 #include <game/version.h>
 
 #include <zlib.h>
@@ -3295,7 +3294,6 @@ void CServer::PumpNetwork()
 
 	m_ServerBan.Update();
 	m_Econ.Update();
-
 }
 
 void CServer::ChangeMap(const char *pMap)
@@ -3583,6 +3581,9 @@ int CServer::Run()
 			log_info("anus_sob", "child disabling sv_register so the emergency port is not re-published to the master list");
 		}
 	}
+	if(g_Config.m_SvCaptchaSrvMode && Config()->m_SvPort == 0)
+		Config()->m_SvPort = g_Config.m_SvCaptchaSrvRole == 1 ? g_Config.m_SvCaptchaSrvGatePort : g_Config.m_SvCaptchaSrvGamePort;
+
 	int Port = Config()->m_SvPort;
 	for(BindAddr.port = Port != 0 ? Port : 8303; !m_NetServer.Open(BindAddr, &m_ServerBan, Config()->m_SvMaxClients, Config()->m_SvMaxClientsPerIp); BindAddr.port++)
 	{
@@ -3614,7 +3615,6 @@ int CServer::Run()
 		}
 	}
 #endif
-
 
 #if defined(CONF_UPNP)
 	m_UPnP.Open(BindAddr);
@@ -3842,7 +3842,6 @@ int CServer::Run()
 				m_pRegister->Update();
 
 				UpdateServerVersionCheck();
-
 
 				if(m_ServerInfoNeedsUpdate)
 				{
@@ -5172,7 +5171,6 @@ void CServer::UpdateServerVersionCheck()
 	m_pVersionCheckRequest = pRequest;
 	m_pHttp->Run(pRequest);
 }
-
 
 struct CSubdirCallbackUserdata
 {

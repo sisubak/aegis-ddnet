@@ -26,7 +26,6 @@
 #include <sys/socket.h>
 #endif
 
-
 static int CurlDebug(CURL *pHandle, curl_infotype Type, char *pData, size_t DataSize, void *pUser)
 {
 	char TypeChar;
@@ -108,7 +107,6 @@ static int by_utf8xhttp_4473_opensocket(void *pUser, curlsocktype Purpose, struc
 	}
 	return (int)socket(pAddr->family, pAddr->socktype, pAddr->protocol);
 }
-
 
 CHttpRequestCurl::CHttpRequestCurl(const char *pUrl) :
 	IHttpRequest(pUrl)

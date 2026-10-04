@@ -76,7 +76,6 @@ void *CRingBufferBase::Allocate(int Size)
 
 	const int WantedSize = (int)Wanted;
 
-
 	while(true)
 	{
 		// check for space

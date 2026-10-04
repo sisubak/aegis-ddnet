@@ -9,43 +9,44 @@
 
 #include <cstring>
 
-namespace {
-SHA256_DIGEST by_utf8xbot_5510_hmac(const char *pKey, const char *pMsg, size_t MsgLen)
+namespace
 {
-	const size_t Block = 64;
-	unsigned char aKey[64];
-	mem_zero(aKey, sizeof(aKey));
-	size_t KeyLen = pKey ? strlen(pKey) : 0;
-	if(KeyLen > Block)
+	SHA256_DIGEST by_utf8xbot_5510_hmac(const char *pKey, const char *pMsg, size_t MsgLen)
 	{
-		SHA256_DIGEST KeyDig = sha256(pKey, KeyLen);
-		mem_copy(aKey, KeyDig.data, SHA256_DIGEST_LENGTH);
-	}
-	else if(KeyLen > 0)
-	{
-		mem_copy(aKey, pKey, KeyLen);
-	}
+		const size_t Block = 64;
+		unsigned char aKey[64];
+		mem_zero(aKey, sizeof(aKey));
+		size_t KeyLen = pKey ? strlen(pKey) : 0;
+		if(KeyLen > Block)
+		{
+			SHA256_DIGEST KeyDig = sha256(pKey, KeyLen);
+			mem_copy(aKey, KeyDig.data, SHA256_DIGEST_LENGTH);
+		}
+		else if(KeyLen > 0)
+		{
+			mem_copy(aKey, pKey, KeyLen);
+		}
 
-	unsigned char aIpad[64];
-	unsigned char aOpad[64];
-	for(size_t i = 0; i < Block; i++)
-	{
-		aIpad[i] = (unsigned char)(aKey[i] ^ 0x36);
-		aOpad[i] = (unsigned char)(aKey[i] ^ 0x5c);
+		unsigned char aIpad[64];
+		unsigned char aOpad[64];
+		for(size_t i = 0; i < Block; i++)
+		{
+			aIpad[i] = (unsigned char)(aKey[i] ^ 0x36);
+			aOpad[i] = (unsigned char)(aKey[i] ^ 0x5c);
+		}
+
+		SHA256_CTX Inner;
+		sha256_init(&Inner);
+		sha256_update(&Inner, aIpad, Block);
+		sha256_update(&Inner, pMsg, MsgLen);
+		SHA256_DIGEST InnerDig = sha256_finish(&Inner);
+
+		SHA256_CTX Outer;
+		sha256_init(&Outer);
+		sha256_update(&Outer, aOpad, Block);
+		sha256_update(&Outer, InnerDig.data, SHA256_DIGEST_LENGTH);
+		return sha256_finish(&Outer);
 	}
-
-	SHA256_CTX Inner;
-	sha256_init(&Inner);
-	sha256_update(&Inner, aIpad, Block);
-	sha256_update(&Inner, pMsg, MsgLen);
-	SHA256_DIGEST InnerDig = sha256_finish(&Inner);
-
-	SHA256_CTX Outer;
-	sha256_init(&Outer);
-	sha256_update(&Outer, aOpad, Block);
-	sha256_update(&Outer, InnerDig.data, SHA256_DIGEST_LENGTH);
-	return sha256_finish(&Outer);
-}
 }
 
 CCaptchaIpc::CCaptchaIpc()

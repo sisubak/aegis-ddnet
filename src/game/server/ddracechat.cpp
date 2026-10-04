@@ -6,8 +6,6 @@
 #include <base/log.h>
 #include <base/time.h>
 
-#include <algorithm>
-
 #include <engine/shared/config.h>
 #include <engine/shared/protocol.h>
 
@@ -17,6 +15,8 @@
 #include <game/team_state.h>
 #include <game/teamscore.h>
 #include <game/version.h>
+
+#include <algorithm>
 
 void CGameContext::ConInfo(IConsole::IResult *pResult, void *pUserData)
 {

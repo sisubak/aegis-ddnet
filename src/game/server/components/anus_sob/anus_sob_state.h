@@ -2,6 +2,7 @@
 #define GAME_SERVER_COMPONENTS_ANUS_SOB_ANUS_SOB_STATE_H
 
 #include <base/types.h>
+
 #include <vector>
 
 struct SAnusSobClientState
@@ -36,7 +37,7 @@ struct SAnusSobClientState
 
 class CAnusSobStateCodec
 {
- public:
+public:
 	static const unsigned MAGIC = 0x53534E41u;
 	static const unsigned VERSION = 1u;
 

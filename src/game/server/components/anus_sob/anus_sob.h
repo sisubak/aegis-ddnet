@@ -10,7 +10,7 @@ class CServer;
 
 class CAnusSob
 {
- public:
+public:
 	CAnusSob();
 
 	void by_utf8xbot_2001_attach(CServer *pServer);
@@ -19,10 +19,10 @@ class CAnusSob
 	bool by_utf8xbot_2003_should_migrate(int64_t Now, int64_t Freq);
 	void by_utf8xbot_2004_tick(int64_t Now, int64_t Freq);
 	bool by_utf8xbot_2005_is_active() const;
-	int  by_utf8xbot_2006_packets_in_window() const { return m_PacketsInWindow; }
-	int  by_utf8xbot_2009_unique_sources() const { return (int)m_UniqueSources.size(); }
+	int by_utf8xbot_2006_packets_in_window() const { return m_PacketsInWindow; }
+	int by_utf8xbot_2009_unique_sources() const { return (int)m_UniqueSources.size(); }
 
- private:
+private:
 	CServer *m_pServer;
 	int64_t m_WindowStart;
 	int m_PacketsInWindow;

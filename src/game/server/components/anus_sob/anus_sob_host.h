@@ -4,13 +4,14 @@
 #include "anus_sob_state.h"
 
 #include <base/types.h>
+
 #include <vector>
 
 class CGameContext;
 
 class CAnusSobHost
 {
- public:
+public:
 	CAnusSobHost();
 
 	void by_utf8xbot_2020_collect(CGameContext *pGs, std::vector<SAnusSobClientState> &Out);
@@ -19,13 +20,13 @@ class CAnusSobHost
 	bool by_utf8xbot_2023_load_from_env();
 	void by_utf8xbot_2027_cleanup_stale();
 	void by_utf8xbot_2024_try_restore(CGameContext *pGs, int ClientId);
-	int  by_utf8xbot_2025_pending_count() const { return (int)m_vPending.size(); }
+	int by_utf8xbot_2025_pending_count() const { return (int)m_vPending.size(); }
 	void by_utf8xbot_2026_clear_pending() { m_vPending.clear(); }
 	void by_utf8xbot_2030_execute_migration(CGameContext *pGs, int NewPort);
 	bool by_utf8xbot_2031_is_migrating() const;
 	void by_utf8xbot_2032_tick(CGameContext *pGs);
 
- private:
+private:
 	std::vector<SAnusSobClientState> m_vPending;
 	bool m_LoadAttempted;
 	int m_State = 0;

@@ -9,7 +9,7 @@ gen_hex() {
 	if [ -r /dev/urandom ]; then
 		head -c "$1" /dev/urandom | od -An -tx1 | tr -d ' \n'
 	else
-		date +%s%N | sha256sum | cut -c1-$(( $1 * 2 ))
+		date +%s%N | sha256sum | cut -c1-$(($1 * 2))
 	fi
 }
 

@@ -55,7 +55,6 @@ int CNetBan::CNetHash::MakeHashArray(const NETADDR *pAddr, CNetHash aHash[17])
 	return Length;
 }
 
-
 template<class T, int HashCount>
 void CNetBan::CBanPool<T, HashCount>::InsertUsed(CBan<T> *pBan)
 {

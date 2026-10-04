@@ -1,12 +1,12 @@
 #ifndef GAME_SERVER_COMPONENTS_CAPTCHA_CAPTCHA_GATE_H
 #define GAME_SERVER_COMPONENTS_CAPTCHA_CAPTCHA_GATE_H
 
-#include <cstdint>
-#include <vector>
+#include "captcha_session.h"
 
 #include <engine/shared/protocol.h>
 
-#include "captcha_session.h"
+#include <cstdint>
+#include <vector>
 
 class CCaptchaGate
 {

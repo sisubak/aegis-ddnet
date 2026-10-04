@@ -1,9 +1,9 @@
 #ifndef GAME_SERVER_COMPONENTS_CAPTCHA_CAPTCHA_BOX_H
 #define GAME_SERVER_COMPONENTS_CAPTCHA_CAPTCHA_BOX_H
 
-#include <vector>
-
 #include <game/server/entity.h>
+
+#include <vector>
 
 struct CSnapContext;
 

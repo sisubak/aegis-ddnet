@@ -97,7 +97,6 @@ void CAbstractPacker::AddRaw(const void *pData, int Size)
 		return;
 	}
 
-
 	mem_copy(m_pCurrent, pData, Size);
 	m_pCurrent += Size;
 }

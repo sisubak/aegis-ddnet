@@ -3,8 +3,6 @@
 #include "gamecontext.h"
 
 #include "components/anus_sob/anus_sob.h"
-
-
 #include "entities/character.h"
 #include "gamemodes/ddnet.h"
 #include "gamemodes/mod.h"
@@ -1250,7 +1248,6 @@ void CGameContext::OnTick()
 
 	m_pController->Tick();
 
-
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(m_apPlayers[i])
@@ -1907,7 +1904,6 @@ void CGameContext::OnClientDrop(int ClientId, const char *pReason)
 
 	m_CaptchaController.by_utf8xbot_8804_on_drop(this, ClientId);
 
-
 	AbortVoteKickOnDisconnect(ClientId);
 	m_pController->OnPlayerDisconnect(m_apPlayers[ClientId], pReason);
 	delete m_apPlayers[ClientId];
@@ -2318,7 +2314,6 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 
 void CGameContext::OnSayNetMessage(const CNetMsg_Cl_Say *pMsg, int ClientId, const CUnpacker *pUnpacker)
 {
-
 	CPlayer *pPlayer = m_apPlayers[ClientId];
 	bool Check = !pPlayer->m_NotEligibleForFinish && pPlayer->m_EligibleForFinishCheck + 10 * time_freq() >= time_get();
 	if(Check && str_comp(pMsg->m_pMessage, "xd sure chillerbot.png is lyfe") == 0 && pMsg->m_Team == 0)

@@ -3,14 +3,12 @@
 #ifndef GAME_SERVER_GAMECONTEXT_H
 #define GAME_SERVER_GAMECONTEXT_H
 
-#include "eventhandler.h"
-#include "gameworld.h"
 #include "components/anus_sob/anus_sob_host.h"
 #include "components/captcha/captcha_controller.h"
+#include "eventhandler.h"
+#include "gameworld.h"
 #include "playermapping.h"
 #include "teehistorian.h"
-
-
 
 #include <base/types.h>
 

@@ -44,7 +44,7 @@ docker compose up -d --build
 
 ## Вариант B: bare-metal из релизного архива
 
-Без Docker, из готового архива релиза (вкладка Releases, напр. `v5`):
+Без Docker, из готового архива релиза (вкладка Releases, напр. `v8`):
 
 1. Распакуй архив своей ОС так, чтобы рядом оказались `DDNet-Server` и `data/`:
    - Linux: `aegis-server-linux-x86_64.tar.gz`

@@ -46,9 +46,6 @@ bool CCaptchaMap::by_utf8xbot_4417(IStorage *pStorage, const char *pMapName)
 
 	pTiles[SpawnY * Width + SpawnX].m_Index = ENTITY_OFFSET + ENTITY_SPAWN;
 
-
-
-
 	CMapItemGroup_v1 Group;
 	Group.m_Version = 1;
 	Group.m_OffsetX = 0;

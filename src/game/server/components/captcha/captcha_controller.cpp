@@ -4,22 +4,23 @@
 #include "captcha_map.h"
 #include "captcha_session.h"
 
+#include <base/time.h>
+
 #include <engine/server.h>
 #include <engine/shared/config.h>
-
-#include <base/time.h>
 
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gameworld.h>
 #include <game/server/player.h>
 
-namespace {
-void by_utf8xbot_8820_addr(CGameContext *pGs, int ClientId, char *pOut, int Size)
+namespace
 {
-	pOut[0] = 0;
-	net_addr_str(pGs->Server()->ClientAddr(ClientId), pOut, Size, false);
-}
+	void by_utf8xbot_8820_addr(CGameContext *pGs, int ClientId, char *pOut, int Size)
+	{
+		pOut[0] = 0;
+		net_addr_str(pGs->Server()->ClientAddr(ClientId), pOut, Size, false);
+	}
 }
 
 CCaptchaController::CCaptchaController()
@@ -269,6 +270,3 @@ bool CCaptchaController::by_utf8xbot_8805_on_chat(CGameContext *pGameServer, int
 
 	return true;
 }
-
-
-

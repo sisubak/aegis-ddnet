@@ -8,8 +8,6 @@
 #include "name_ban.h"
 #include "snap_id_pool.h"
 
-
-
 #include <base/hash.h>
 
 #include <engine/console.h>
@@ -324,7 +322,6 @@ public:
 	char m_aNewServerVersion[64] = "";
 	bool m_NewServerVersionAvailable = false;
 
-
 	std::shared_ptr<ILogger> m_pFileLogger = nullptr;
 	std::shared_ptr<ILogger> m_pStdoutLogger = nullptr;
 
@@ -347,7 +344,6 @@ public:
 	void Ban(int ClientId, int Seconds, const char *pReason, bool VerbatimReason) override;
 	void ReconnectClient(int ClientId);
 	void RedirectClient(int ClientId, int Port) override;
-
 
 	void DemoRecorder_HandleAutoStart() override;
 
@@ -552,7 +548,6 @@ public:
 
 	bool GetNewServerVersion(char *pBuf, int Size) const override;
 	void UpdateServerVersionCheck();
-
 
 	static int MaplistEntryCallback(const char *pFilename, int IsDir, int DirType, void *pUser);
 	void InitMaplist();

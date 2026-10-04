@@ -3,17 +3,19 @@
 #include "captcha_glyphs.h"
 #include "captcha_map.h"
 
-#include <cstring>
-
 #include <base/secure.h>
 
+#include <engine/shared/config.h>
 #include <engine/shared/protocol.h>
 
 #include <generated/protocol.h>
+
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gameworld.h>
+
+#include <cstring>
 
 CCaptchaBox::CCaptchaBox(CGameWorld *pGameWorld, vec2 Pos, const char *pCode) :
 	CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER, false)
@@ -77,7 +79,6 @@ void CCaptchaBox::by_utf8xbot_2043(vec2 Pos)
 {
 	m_Pos = Pos;
 }
-
 
 void CCaptchaBox::Tick()
 {
@@ -145,7 +146,6 @@ void CCaptchaBox::TickPaused()
 {
 }
 
-
 int CCaptchaBox::by_utf8xbot_5521() const
 {
 	return m_NumDigits;
@@ -197,13 +197,14 @@ void CCaptchaBox::Snap(int SnappingClient)
 	by_utf8xbot_6193(Context, IdIndex, BottomRight, BottomLeft);
 	by_utf8xbot_6193(Context, IdIndex, BottomLeft, TopLeft);
 
-	const float GlyphW = 72.0f;
-	const float GlyphH = 96.0f;
-	const float Step = 90.0f;
+	const float GlyphScale = (float)g_Config.m_SvCaptchaSrvGlyphScale;
+	const float GlyphW = GlyphScale * 1.5f;
+	const float GlyphH = GlyphScale * 2.0f;
+	const float Step = GlyphScale * 1.875f;
 
 	float TotalWidth = (m_NumDigits > 0) ? (Step * (m_NumDigits - 1) + GlyphW) : 0.0f;
 	float StartX = m_Pos.x - TotalWidth * 0.5f;
-	float BaseY = m_Pos.y - HalfH - 30.0f - GlyphH;
+	float BaseY = m_Pos.y - HalfH - GlyphScale * 0.625f - GlyphH;
 
 	for(int i = 0; i < m_NumDigits; i++)
 	{

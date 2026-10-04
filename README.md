@@ -5,7 +5,7 @@
 Анти-DDoS сервер на базе DDNet
 
 ![status](https://img.shields.io/badge/status-alpha-red)
-![version](https://img.shields.io/badge/release-v5-blueviolet)
+![version](https://img.shields.io/badge/release-v8-blueviolet)
 ![ddnet](https://img.shields.io/badge/DDNet-20.2-blue)
 ![base](https://img.shields.io/badge/base-ddnet%20fork-blue)
 ![protection](https://img.shields.io/badge/protection-anti--DDoS-red)
@@ -90,7 +90,6 @@
 | `sv_anus_sob_port_min` | 20000 | Нижняя граница случайного аварийного порта |
 | `sv_anus_sob_port_max` | 60000 | Верхняя граница случайного аварийного порта |
 | `sv_anus_sob_emergency_bin` | `./DDNet-Server` | Путь к бинарю аварийного сервера (цель fork+exec) |
-| `sv_anus_sob_ipc_path` | `anus_sob.sock` | Локальная точка IPC (UDS на Linux, именованный канал на Windows) |
 | `sv_anus_sob_grace_ms` | 3000 | Сколько мс родитель живёт после редиректа клиентов перед выходом |
 | `sv_anus_sob_child_wait_ms` | 2000 | Сколько мс родитель ждёт готовности мигрированного чайлда перед редиректом |
 | `sv_anus_sob_min_unique_sources` | 32 | Минимум различных источников в окне, чтобы считать трафик реальным DDoS |
@@ -115,4 +114,4 @@
 
 ## Статус
 
-Проект находится в стадии альфа-тестирования (текущий релиз v5, база DDNet 20.2). Часть конфигов временные и могут быть неполными, поведение сервера может меняться без предупреждения.
+Проект находится в стадии альфа-тестирования (текущий релиз v8, база DDNet 20.2). Часть конфигов временные и могут быть неполными, поведение сервера может меняться без предупреждения.

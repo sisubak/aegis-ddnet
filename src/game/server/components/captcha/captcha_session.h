@@ -2,9 +2,9 @@
 #define GAME_SERVER_COMPONENTS_CAPTCHA_CAPTCHA_SESSION_H
 
 #include <cstdint>
-#include <cstring>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 class CCaptchaSession
 {

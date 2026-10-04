@@ -468,9 +468,8 @@ MACRO_CONFIG_INT(SvAnusSobWindowMs, sv_anus_sob_window_ms, 1000, 100, 60000, CFG
 MACRO_CONFIG_INT(SvAnusSobPortMin, sv_anus_sob_port_min, 20000, 1024, 65000, CFGFLAG_SERVER, "anus_server_sob: lower bound for random emergency port")
 MACRO_CONFIG_INT(SvAnusSobPortMax, sv_anus_sob_port_max, 60000, 1024, 65535, CFGFLAG_SERVER, "anus_server_sob: upper bound for random emergency port")
 MACRO_CONFIG_STR(SvAnusSobEmergencyBin, sv_anus_sob_emergency_bin, 256, "./DDNet-Server", CFGFLAG_SERVER, "anus_server_sob: path to the emergency server binary (fork+exec target)")
-MACRO_CONFIG_STR(SvAnusSobIpcPath, sv_anus_sob_ipc_path, 256, "anus_sob.sock", CFGFLAG_SERVER, "anus_server_sob: local IPC endpoint (UDS path on Linux, named pipe name on Windows)")
 MACRO_CONFIG_INT(SvAnusSobGraceMs, sv_anus_sob_grace_ms, 3000, 100, 60000, CFGFLAG_SERVER, "anus_server_sob: grace period in ms the parent keeps running after redirecting clients, before it exits")
-MACRO_CONFIG_INT(SvAnusSobChildWaitMs, sv_anus_sob_child_wait_ms, 2000, 0, 30000, CFGFLAG_SERVER, "anus_server_sob: how long the parent waits for the migrated child to signal readiness before redirecting clients")
+MACRO_CONFIG_INT(SvAnusSobChildWaitMs, sv_anus_sob_child_wait_ms, 2000, 100, 30000, CFGFLAG_SERVER, "anus_server_sob: how long the parent waits for the migrated child to signal readiness before redirecting clients")
 MACRO_CONFIG_INT(SvAnusSobMinUniqueSources, sv_anus_sob_min_unique_sources, 32, 1, 100000, CFGFLAG_SERVER, "anus_server_sob: minimum distinct source addresses within the window required to treat traffic as a real DDoS before migrating")
 MACRO_CONFIG_INT(SvCaptchaSrvMode, sv_captcha_srv_mode, 0, 0, 1, CFGFLAG_SERVER, "captcha_server: enable paired gate+game captcha protection")
 MACRO_CONFIG_INT(SvCaptchaSrvRole, sv_captcha_srv_role, 0, 0, 1, CFGFLAG_SERVER, "captcha_server: 0 = game server, 1 = gate server")
@@ -538,8 +537,7 @@ MACRO_CONFIG_INT(SvSixup, sv_sixup, 1, 0, 1, CFGFLAG_SERVER, "Enable sixup conne
 MACRO_CONFIG_INT(SvSkillLevel, sv_skill_level, 1, SERVERINFO_LEVEL_MIN, SERVERINFO_LEVEL_MAX, CFGFLAG_SERVER, "Difficulty level for Teeworlds 0.7 (0: Casual, 1: Normal, 2: Competitive)")
 MACRO_CONFIG_INT(SvVersionCheck, sv_version_check, 1, 0, 1, CFGFLAG_SERVER, "Periodically check GitHub for a newer server release and warn rcon admins")
 MACRO_CONFIG_STR(SvVersionCheckUrl, sv_version_check_url, 256, "https://api.github.com/repos/sisubak/aegis-ddnet/tags", CFGFLAG_SERVER, "URL returning releases as GitHub JSON (tags array with name, or a single object with tag_name)")
-MACRO_CONFIG_STR(SvVersionCurrent, sv_version_current, 64, "v5", CFGFLAG_SERVER, "This server's current release tag, compared against the latest tag from sv_version_check_url")
-
+MACRO_CONFIG_STR(SvVersionCurrent, sv_version_current, 64, "v8", CFGFLAG_SERVER, "This server's current release tag, compared against the latest tag from sv_version_check_url")
 
 MACRO_CONFIG_STR(EcBindaddr, ec_bindaddr, 128, "localhost", CFGFLAG_ECON, "Address to bind the external console to. Anything but 'localhost' is dangerous")
 MACRO_CONFIG_INT(EcPort, ec_port, 0, 0, 65535, CFGFLAG_ECON, "Port to use for the external console")

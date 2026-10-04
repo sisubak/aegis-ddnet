@@ -1,6 +1,7 @@
 #include "anus_sob.h"
 
 #include <base/log.h>
+
 #include <engine/shared/config.h>
 
 CAnusSob::CAnusSob() :
@@ -41,7 +42,8 @@ bool CAnusSob::by_utf8xbot_2003_should_migrate(int64_t Now, int64_t Freq)
 	if(!by_utf8xbot_2005_is_active())
 		return false;
 	int64_t WindowLen = (Freq * g_Config.m_SvAnusSobWindowMs) / 1000;
-	if(WindowLen <= 0) WindowLen = Freq;
+	if(WindowLen <= 0)
+		WindowLen = Freq;
 	if(Now - m_WindowStart >= WindowLen)
 		return false;
 	if(m_PacketsInWindow < g_Config.m_SvAnusSobThreshold)
@@ -61,7 +63,8 @@ void CAnusSob::by_utf8xbot_2004_tick(int64_t Now, int64_t Freq)
 		return;
 	}
 	int64_t WindowLen = (Freq * g_Config.m_SvAnusSobWindowMs) / 1000;
-	if(WindowLen <= 0) WindowLen = Freq;
+	if(WindowLen <= 0)
+		WindowLen = Freq;
 	if(Now - m_WindowStart >= WindowLen)
 	{
 		if(m_PacketsInWindow >= g_Config.m_SvAnusSobThreshold && Now - m_LastMigrationLog >= Freq * 5)

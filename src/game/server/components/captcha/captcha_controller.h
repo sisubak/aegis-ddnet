@@ -1,13 +1,13 @@
 #ifndef GAME_SERVER_COMPONENTS_CAPTCHA_CAPTCHA_CONTROLLER_H
 #define GAME_SERVER_COMPONENTS_CAPTCHA_CAPTCHA_CONTROLLER_H
 
-#include <cstdint>
-#include <string>
-#include <unordered_map>
-
 #include "captcha_gate.h"
 #include "captcha_hud.h"
 #include "captcha_ipc.h"
+
+#include <cstdint>
+#include <string>
+#include <unordered_map>
 
 class CGameContext;
 class CCaptchaBox;

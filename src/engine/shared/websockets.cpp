@@ -81,7 +81,6 @@ static void receive_chunk(context_data *ctx_data, per_session_data *pss, const v
 	mem_copy(&chunk->data[0], in, len);
 }
 
-
 static void sockaddr_to_netaddr_websocket(const sockaddr *src, socklen_t src_len, NETADDR *dst)
 {
 	*dst = NETADDR_ZEROED;

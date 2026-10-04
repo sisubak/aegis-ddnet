@@ -5,13 +5,14 @@
 #include <base/secure.h>
 #include <base/str.h>
 #include <base/time.h>
+
 #include <engine/server.h>
 #include <engine/shared/config.h>
 
-#include <game/server/gamecontext.h>
-#include <game/server/entities/character.h>
-#include <game/server/player.h>
 #include <game/gamecore.h>
+#include <game/server/entities/character.h>
+#include <game/server/gamecontext.h>
+#include <game/server/player.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -27,13 +28,16 @@ CAnusSobHost::CAnusSobHost() :
 void CAnusSobHost::by_utf8xbot_2020_collect(CGameContext *pGs, std::vector<SAnusSobClientState> &Out)
 {
 	Out.clear();
-	if(!pGs) return;
+	if(!pGs)
+		return;
 	IServer *pServer = pGs->Server();
 	for(int i = 0; i < MAX_CLIENTS; ++i)
 	{
 		CPlayer *pP = pGs->m_apPlayers[i];
-		if(!pP) continue;
-		if(pServer->ClientSlotEmpty(i)) continue;
+		if(!pP)
+			continue;
+		if(pServer->ClientSlotEmpty(i))
+			continue;
 		SAnusSobClientState S;
 		std::memset(&S, 0, sizeof(S));
 		S.m_ClientId = i;
@@ -49,13 +53,16 @@ void CAnusSobHost::by_utf8xbot_2020_collect(CGameContext *pGs, std::vector<SAnus
 			S.m_Alive = 1;
 			S.m_Team = pChr->Team();
 			const CCharacterCore *pC = pChr->Core();
-			S.m_PosX = pC->m_Pos.x; S.m_PosY = pC->m_Pos.y;
-			S.m_VelX = pC->m_Vel.x; S.m_VelY = pC->m_Vel.y;
+			S.m_PosX = pC->m_Pos.x;
+			S.m_PosY = pC->m_Pos.y;
+			S.m_VelX = pC->m_Vel.x;
+			S.m_VelY = pC->m_Vel.y;
 			S.m_Direction = pC->m_Direction;
 			S.m_Jumped = pC->m_Jumped;
 			S.m_HookState = pC->m_HookState;
 			S.m_HookedPlayer = pC->HookedPlayer();
-			S.m_HookX = pC->m_HookPos.x; S.m_HookY = pC->m_HookPos.y;
+			S.m_HookX = pC->m_HookPos.x;
+			S.m_HookY = pC->m_HookPos.y;
 			S.m_FreezeEndTick = pC->m_FreezeEnd;
 			S.m_DeepFrozen = pC->m_DeepFrozen ? 1 : 0;
 			S.m_LiveFrozen = pC->m_LiveFrozen ? 1 : 0;
@@ -80,7 +87,8 @@ bool CAnusSobHost::by_utf8xbot_2021_write_state_file(const char *pPath, const st
 	std::vector<unsigned char> Buf;
 	CAnusSobStateCodec::by_utf8xbot_2200_pack(St, Buf);
 	FILE *pF = std::fopen(pPath, "wb");
-	if(!pF) return false;
+	if(!pF)
+		return false;
 	size_t W = std::fwrite(Buf.data(), 1, Buf.size(), pF);
 	std::fclose(pF);
 	return W == Buf.size();
@@ -89,24 +97,32 @@ bool CAnusSobHost::by_utf8xbot_2021_write_state_file(const char *pPath, const st
 bool CAnusSobHost::by_utf8xbot_2022_read_state_file(const char *pPath, std::vector<SAnusSobClientState> &Out)
 {
 	FILE *pF = std::fopen(pPath, "rb");
-	if(!pF) return false;
+	if(!pF)
+		return false;
 	std::fseek(pF, 0, SEEK_END);
 	long Sz = std::ftell(pF);
 	std::fseek(pF, 0, SEEK_SET);
-	if(Sz <= 0 || Sz > 4 * 1024 * 1024) { std::fclose(pF); return false; }
+	if(Sz <= 0 || Sz > 4 * 1024 * 1024)
+	{
+		std::fclose(pF);
+		return false;
+	}
 	std::vector<unsigned char> Buf((size_t)Sz);
 	size_t R = std::fread(Buf.data(), 1, Buf.size(), pF);
 	std::fclose(pF);
-	if(R != Buf.size()) return false;
+	if(R != Buf.size())
+		return false;
 	return CAnusSobStateCodec::by_utf8xbot_2201_unpack(Buf, Out);
 }
 
 bool CAnusSobHost::by_utf8xbot_2023_load_from_env()
 {
-	if(m_LoadAttempted) return !m_vPending.empty();
+	if(m_LoadAttempted)
+		return !m_vPending.empty();
 	m_LoadAttempted = true;
 	const char *pPath = std::getenv("ANUS_SOB_STATE_FILE");
-	if(!pPath || !*pPath) return false;
+	if(!pPath || !*pPath)
+		return false;
 	std::vector<SAnusSobClientState> V;
 	if(!by_utf8xbot_2022_read_state_file(pPath, V))
 	{
@@ -121,18 +137,24 @@ bool CAnusSobHost::by_utf8xbot_2023_load_from_env()
 
 void CAnusSobHost::by_utf8xbot_2024_try_restore(CGameContext *pGs, int ClientId)
 {
-	if(!pGs) return;
-	if(m_vPending.empty()) return;
+	if(!pGs)
+		return;
+	if(m_vPending.empty())
+		return;
 	IServer *pServer = pGs->Server();
-	if(pServer->ClientSlotEmpty(ClientId)) return;
+	if(pServer->ClientSlotEmpty(ClientId))
+		return;
 	const auto &Addr = pServer->ClientAddrStringImpl(ClientId, false);
 	for(size_t i = 0; i < m_vPending.size(); ++i)
 	{
-		if(std::strncmp(m_vPending[i].m_aAddr, Addr.data(), sizeof(m_vPending[i].m_aAddr)) != 0) continue;
-		if(std::strncmp(m_vPending[i].m_aName, pServer->ClientName(ClientId), sizeof(m_vPending[i].m_aName)) != 0) continue;
+		if(std::strncmp(m_vPending[i].m_aAddr, Addr.data(), sizeof(m_vPending[i].m_aAddr)) != 0)
+			continue;
+		if(std::strncmp(m_vPending[i].m_aName, pServer->ClientName(ClientId), sizeof(m_vPending[i].m_aName)) != 0)
+			continue;
 		const SAnusSobClientState &S = m_vPending[i];
 		CPlayer *pP = pGs->m_apPlayers[ClientId];
-		if(!pP) return;
+		if(!pP)
+			return;
 		CCharacter *pChr = pP->GetCharacter();
 		if(pChr && S.m_Alive)
 		{
@@ -169,13 +191,15 @@ void CAnusSobHost::by_utf8xbot_2024_try_restore(CGameContext *pGs, int ClientId)
 #include <base/detect.h>
 
 #if defined(CONF_FAMILY_UNIX)
-#include <unistd.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <dirent.h>
+#include <unistd.h>
+
 #include <cerrno>
+#include <csignal>
 #endif
 
 bool CAnusSobHost::by_utf8xbot_2031_is_migrating() const { return m_State != 0; }
@@ -183,13 +207,19 @@ bool CAnusSobHost::by_utf8xbot_2031_is_migrating() const { return m_State != 0; 
 void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int NewPort)
 {
 #if defined(CONF_FAMILY_UNIX)
-	if(!pGs) return;
-	if(m_State != 0) return;
+	if(!pGs)
+		return;
+	if(m_State != 0)
+		return;
 	if(NewPort <= 0 || NewPort >= 65536)
 	{
 		int Lo = g_Config.m_SvAnusSobPortMin;
 		int Hi = g_Config.m_SvAnusSobPortMax;
-		if(Lo <= 0 || Hi <= Lo) { Lo = 20000; Hi = 60000; }
+		if(Lo <= 0 || Hi <= Lo)
+		{
+			Lo = 20000;
+			Hi = 60000;
+		}
 		NewPort = Lo + secure_rand_below(Hi - Lo + 1);
 	}
 
@@ -223,7 +253,8 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 			{
 				if(c == 0)
 				{
-					if(!Cur.empty()) vArgs.push_back(Cur);
+					if(!Cur.empty())
+						vArgs.push_back(Cur);
 					Cur.clear();
 				}
 				else
@@ -231,7 +262,8 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 					Cur.push_back((char)c);
 				}
 			}
-			if(!Cur.empty()) vArgs.push_back(Cur);
+			if(!Cur.empty())
+				vArgs.push_back(Cur);
 			std::fclose(pCmd);
 		}
 	}
@@ -241,7 +273,8 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 	if(L <= 0)
 	{
 		const char *pBin = g_Config.m_SvAnusSobEmergencyBin;
-		if(!pBin || !*pBin) pBin = "./DDNet-Server";
+		if(!pBin || !*pBin)
+			pBin = "./DDNet-Server";
 		std::strncpy(aExe, pBin, sizeof(aExe) - 1);
 		aExe[sizeof(aExe) - 1] = 0;
 	}
@@ -291,24 +324,34 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 		setenv("ANUS_SOB_READY_FD", aReadyStr, 1);
 		for(int Fd = 3; Fd < 256; ++Fd)
 		{
-			if(Fd != aReadyPipe[1]) close(Fd);
+			if(Fd != aReadyPipe[1])
+				close(Fd);
 		}
 		execv(aExe, vpArgv.data());
 		_exit(127);
 	}
 
 	close(aReadyPipe[1]);
+	int ReadyFlags = fcntl(aReadyPipe[0], F_GETFL, 0);
+	if(ReadyFlags >= 0)
+		(void)fcntl(aReadyPipe[0], F_SETFL, ReadyFlags | O_NONBLOCK);
 
 	int WaitMs = g_Config.m_SvAnusSobChildWaitMs;
-	if(WaitMs < 0) WaitMs = 0;
+	if(WaitMs < 100)
+		WaitMs = 100;
 	int64_t Deadline = time_get() + (int64_t)((int64_t)time_freq() * WaitMs / 1000);
 	bool ChildReady = false;
 	while(time_get() < Deadline)
 	{
 		char Byte;
 		ssize_t r = read(aReadyPipe[0], &Byte, 1);
-		if(r == 1) { ChildReady = true; break; }
-		if(r == 0) break;
+		if(r == 1)
+		{
+			ChildReady = true;
+			break;
+		}
+		if(r == 0)
+			break;
 		int WaitStatus = 0;
 		pid_t w = waitpid(Pid, &WaitStatus, WNOHANG);
 		if(w == Pid)
@@ -322,7 +365,13 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 	}
 	close(aReadyPipe[0]);
 	if(!ChildReady)
-		log_warn("anus_sob", "child readiness not confirmed within %dms, proceeding cautiously", WaitMs);
+	{
+		log_error("anus_sob", "child readiness not confirmed within %dms, aborting migration", WaitMs);
+		kill(Pid, SIGTERM);
+		(void)waitpid(Pid, nullptr, 0);
+		unlink(aPath);
+		return;
+	}
 
 	m_ChildPid = Pid;
 	m_NewPort = NewPort;
@@ -332,27 +381,31 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 	int Redirected = 0;
 	for(int i = 0; i < MAX_CLIENTS; ++i)
 	{
-		if(pServer->ClientSlotEmpty(i)) continue;
+		if(pServer->ClientSlotEmpty(i))
+			continue;
 		pServer->RedirectClient(i, NewPort);
 		++Redirected;
 	}
 	int GraceMs = g_Config.m_SvAnusSobGraceMs;
-	if(GraceMs < 100) GraceMs = 100;
+	if(GraceMs < 100)
+		GraceMs = 100;
 	m_ExitDeadline = time_get() + (int64_t)((int64_t)time_freq() * GraceMs / 1000);
 	m_State = 2;
 	log_info("anus_sob", "redirected %d clients; parent exits in ~%dms", Redirected, GraceMs);
 #else
-	(void)pGs; (void)NewPort;
+	(void)pGs;
+	(void)NewPort;
 	log_warn("anus_sob", "migration not supported on this platform");
 #endif
 }
 
-
 void CAnusSobHost::by_utf8xbot_2032_tick(CGameContext *pGs)
 {
 #if defined(CONF_FAMILY_UNIX)
-	if(m_State != 2) return;
-	if(time_get() < m_ExitDeadline) return;
+	if(m_State != 2)
+		return;
+	if(time_get() < m_ExitDeadline)
+		return;
 	log_info("anus_sob", "parent shutdown after migration grace");
 	(void)pGs;
 	_exit(0);
@@ -365,18 +418,22 @@ void CAnusSobHost::by_utf8xbot_2027_cleanup_stale()
 {
 #if defined(CONF_FAMILY_UNIX)
 	DIR *pDir = opendir("/tmp");
-	if(!pDir) return;
+	if(!pDir)
+		return;
 	int64_t Now = time_timestamp();
 	struct dirent *pEnt;
 	while((pEnt = readdir(pDir)) != nullptr)
 	{
-		if(std::strncmp(pEnt->d_name, "anus_sob_", 9) != 0) continue;
+		if(std::strncmp(pEnt->d_name, "anus_sob_", 9) != 0)
+			continue;
 		size_t Len = std::strlen(pEnt->d_name);
-		if(Len < 6 || std::strcmp(pEnt->d_name + Len - 6, ".state") != 0) continue;
+		if(Len < 6 || std::strcmp(pEnt->d_name + Len - 6, ".state") != 0)
+			continue;
 		char aPath[512];
 		std::snprintf(aPath, sizeof(aPath), "/tmp/%s", pEnt->d_name);
 		struct stat St;
-		if(stat(aPath, &St) != 0) continue;
+		if(stat(aPath, &St) != 0)
+			continue;
 		if((Now - (int64_t)St.st_mtime) > 3600)
 		{
 			std::remove(aPath);

@@ -1,6 +1,6 @@
-#include <cstddef>
-
 #include "captcha_glyphs.h"
+
+#include <cstddef>
 
 static const CGlyphSeg gs_by_utf8xbot_70441[] = {
 	{0.80f, 0.50f, 0.76f, 0.71f},

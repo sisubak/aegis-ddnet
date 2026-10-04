@@ -8,13 +8,13 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Tag name for the manual release (e.g. v3b6)"
+        description: "Tag name for the manual release (e.g. v8)"
         required: true
-        default: "manual-build"
+        default: "v8"
 
 concurrency:
   group: release-servers-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -32,6 +32,9 @@ jobs:
           - name: windows-x64-msvc
             os: windows-latest
             cmake-args: -A x64
+          - name: macos-arm64
+            os: macos-15
+            cmake-args: -G Ninja
 
     steps:
     - uses: actions/checkout@v5
@@ -51,6 +54,13 @@ jobs:
           libssl-dev \
           libcurl4-openssl-dev \
           zlib1g-dev
+        rustup default stable
+
+    - name: Prepare macOS
+      if: contains(matrix.os, 'macos')
+      run: |
+        test "$(uname -m)" = "arm64"
+        brew install ninja pkg-config
         rustup default stable
 
     - name: Configure
@@ -82,7 +92,7 @@ jobs:
             artifact: DDNet-Server.exe
             asset: aegis-server-windows-x64
           - name: macos-arm64
-            os: macOS-latest
+            os: macos-15
             cmake-args: -G Ninja
             artifact: DDNet-Server
             asset: aegis-server-macos-arm64
@@ -107,10 +117,11 @@ jobs:
         rustup default stable
 
     - name: Prepare macOS
-      if: contains(matrix.os, 'macOS')
+      if: contains(matrix.os, 'macos')
       run: |
+        test "$(uname -m)" = "arm64"
         brew install ninja pkg-config
-        rustup default stable || true
+        rustup default stable
 
     - name: Configure
       run: |
@@ -130,7 +141,8 @@ jobs:
         cd release
         mkdir -p pkg
         cp "${{ matrix.artifact }}" pkg/
-        cp -r ../data pkg/ 2>/dev/null || true
+        cp -r ../data ../deploy pkg/
+        cp ../README.md ../PORTING.md ../license.txt ../storage.cfg pkg/
         tar -C pkg -czf "../${{ matrix.asset }}.tar.gz" .
 
     - name: Stage artifact (Windows)
@@ -141,7 +153,8 @@ jobs:
         $exe = Get-ChildItem -Recurse -Filter "${{ matrix.artifact }}" | Select-Object -First 1
         New-Item -ItemType Directory -Force -Path pkg | Out-Null
         Copy-Item $exe.FullName pkg\
-        if (Test-Path ..\data) { Copy-Item -Recurse ..\data pkg\ }
+        Copy-Item -Path ..\data, ..\deploy -Destination pkg\ -Recurse
+        Copy-Item -Path ..\README.md, ..\PORTING.md, ..\license.txt, ..\storage.cfg -Destination pkg\
         Compress-Archive -Path pkg\* -DestinationPath "..\${{ matrix.asset }}.zip" -Force
 
     - name: Upload build artifact
@@ -166,7 +179,9 @@ jobs:
       run: |
         mkdir -p release-assets
         find dist -type f \( -name "*.tar.gz" -o -name "*.zip" \) -exec cp {} release-assets/ \;
-        ls -la release-assets
+        cd release-assets
+        sha256sum *.tar.gz *.zip > SHA256SUMS
+        ls -la
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
@@ -183,6 +198,8 @@ jobs:
           - aegis-server-linux-x86_64.tar.gz  (Linux x86_64)
           - aegis-server-windows-x64.zip      (Windows x64, MSVC)
           - aegis-server-macos-arm64.tar.gz   (macOS arm64)
+          - SHA256SUMS                         (checksums)
 
-          Each archive contains the DDNet-Server binary plus the data directory.
+          Each archive contains the DDNet-Server binary, data directory,
+          deployment configs/scripts and documentation.
         files: release-assets/*

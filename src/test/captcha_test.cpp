@@ -4,10 +4,10 @@
 #include <base/io.h>
 #include <base/str.h>
 
-#include <gtest/gtest.h>
-
 #include <game/server/components/captcha/captcha_gate.h>
 #include <game/server/components/captcha/captcha_session.h>
+
+#include <gtest/gtest.h>
 
 #include <cstring>
 #include <string>
@@ -126,6 +126,25 @@ TEST(Captcha, WhitelistTtl)
 	EXPECT_FALSE(fs_remove(Info.m_aFilename));
 }
 
+TEST(Captcha, WhitelistRefreshesWithinSameSecond)
+{
+	CTestInfo Info;
+	EXPECT_FALSE(CCaptchaSession::by_utf8xbot_L(Info.m_aFilename, "1.2.3.4", 1000, 3600));
+	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "1.2.3.4", 1000, 0, 3600);
+	EXPECT_TRUE(CCaptchaSession::by_utf8xbot_L(Info.m_aFilename, "1.2.3.4", 1000, 3600));
+
+	EXPECT_FALSE(fs_remove(Info.m_aFilename));
+}
+
+TEST(Captcha, WhitelistRejectsFutureTimestamp)
+{
+	CTestInfo Info;
+	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "1.2.3.4", 2000, 0, 3600);
+	EXPECT_FALSE(CCaptchaSession::by_utf8xbot_L(Info.m_aFilename, "1.2.3.4", 1000, 3600));
+
+	EXPECT_FALSE(fs_remove(Info.m_aFilename));
+}
+
 TEST(Captcha, WhitelistSizeCap)
 {
 	CTestInfo Info;
@@ -182,4 +201,3 @@ TEST(Captcha, GateQueueOverflowAndPromote)
 	EXPECT_TRUE(Gate.by_utf8xbot_9053_is_active(1));
 	EXPECT_EQ(Gate.by_utf8xbot_1927(1), 0);
 }
-
