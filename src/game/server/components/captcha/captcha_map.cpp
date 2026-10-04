@@ -7,7 +7,7 @@
 
 #include <game/mapitems.h>
 
-bool CCaptchaMap::by_utf8xbot_4417(IStorage *pStorage, const char *pMapName)
+bool CCaptchaMap::Generate(IStorage *pStorage, const char *pMapName)
 {
 	const int Width = MAP_W;
 	const int Height = MAP_H;
@@ -80,7 +80,7 @@ bool CCaptchaMap::by_utf8xbot_4417(IStorage *pStorage, const char *pMapName)
 	return true;
 }
 
-void CCaptchaMap::by_utf8xbot_5729_spawn(float *pX, float *pY)
+void CCaptchaMap::Spawn(float *pX, float *pY)
 {
 	if(pX)
 		*pX = (MAP_W / 2) * 32.0f + 16.0f;
@@ -88,7 +88,7 @@ void CCaptchaMap::by_utf8xbot_5729_spawn(float *pX, float *pY)
 		*pY = (MAP_H / 2) * 32.0f + 16.0f;
 }
 
-void CCaptchaMap::by_utf8xbot_5730_extents(float *pHalfW, float *pHalfH)
+void CCaptchaMap::Extents(float *pHalfW, float *pHalfH)
 {
 	if(pHalfW)
 		*pHalfW = BOX_HALF_W_TILES * 32.0f;

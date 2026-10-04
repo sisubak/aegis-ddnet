@@ -165,7 +165,7 @@ const CGlyphSeg *by_utf8xbot_31007(int Digit, int *pCount)
 	{
 		if(pCount)
 			*pCount = 0;
-		return NULL;
+		return nullptr;
 	}
 	if(pCount)
 		*pCount = gs_by_utf8xbot_70452[Digit];

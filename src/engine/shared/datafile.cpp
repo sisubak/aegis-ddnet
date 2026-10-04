@@ -245,6 +245,13 @@ public:
 			}
 
 			// read the compressed data
+			if(DataSize <= 0)
+			{
+				log_error("datafile", "invalid compressed data size. index=%d size=%d", Index, DataSize);
+				m_ppDataPtrs[Index] = nullptr;
+				m_pDataSizes[Index] = -1;
+				return nullptr;
+			}
 			void *pCompressedData = malloc(DataSize);
 			if(pCompressedData == nullptr)
 			{

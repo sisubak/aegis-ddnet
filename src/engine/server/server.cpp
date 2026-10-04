@@ -3524,7 +3524,7 @@ int CServer::Run()
 	// load map
 	if(g_Config.m_SvCaptchaSrvMode && g_Config.m_SvCaptchaSrvRole == 1)
 	{
-		if(CCaptchaMap::by_utf8xbot_4417(Storage(), g_Config.m_SvCaptchaSrvLobbyMap))
+		if(CCaptchaMap::Generate(Storage(), g_Config.m_SvCaptchaSrvLobbyMap))
 			str_copy(Config()->m_SvMap, g_Config.m_SvCaptchaSrvLobbyMap, sizeof(Config()->m_SvMap));
 	}
 	if(!LoadMap(Config()->m_SvMap))

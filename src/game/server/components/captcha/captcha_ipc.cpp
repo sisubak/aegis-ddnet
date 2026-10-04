@@ -228,7 +228,7 @@ bool CCaptchaIpc::Send(int Port, const char *pIp, const char *pSecret)
 
 	char aBuf[512];
 	str_format(aBuf, sizeof(aBuf), "%s:%s:%s", aNonceHex, aMacHex, pIp);
-	int Len = (int)str_length(aBuf);
+	int Len = str_length(aBuf);
 	int Sent = net_udp_send(Socket, &Addr, aBuf, Len);
 	net_udp_close(Socket);
 

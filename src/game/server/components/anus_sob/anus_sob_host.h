@@ -24,7 +24,7 @@ public:
 	void by_utf8xbot_2026_clear_pending() { m_vPending.clear(); }
 	void by_utf8xbot_2030_execute_migration(CGameContext *pGs, int NewPort);
 	bool by_utf8xbot_2031_is_migrating() const;
-	void by_utf8xbot_2032_tick(CGameContext *pGs);
+	void by_utf8xbot_2032_tick(CGameContext *pGs) const;
 
 private:
 	std::vector<SAnusSobClientState> m_vPending;

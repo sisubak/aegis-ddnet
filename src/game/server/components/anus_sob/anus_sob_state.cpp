@@ -70,9 +70,8 @@ void CAnusSobStateCodec::Pack(const std::vector<SAnusSobClientState> &In, std::v
 	by_utf8xbot_2210_put_u32(Out, MAGIC);
 	by_utf8xbot_2210_put_u32(Out, VERSION);
 	by_utf8xbot_2211_put_i32(Out, (int)In.size());
-	for(unsigned i = 0; i < In.size(); ++i)
+	for(const SAnusSobClientState &S : In)
 	{
-		const SAnusSobClientState &S = In[i];
 		by_utf8xbot_2211_put_i32(Out, S.m_ClientId);
 		by_utf8xbot_2213_put_bytes(Out, S.m_aAddr, sizeof(S.m_aAddr));
 		by_utf8xbot_2213_put_bytes(Out, S.m_aName, sizeof(S.m_aName));
@@ -99,10 +98,10 @@ void CAnusSobStateCodec::Pack(const std::vector<SAnusSobClientState> &In, std::v
 		by_utf8xbot_2211_put_i32(Out, S.m_Jetpack);
 		by_utf8xbot_2211_put_i32(Out, S.m_ActiveWeapon);
 		by_utf8xbot_2211_put_i32(Out, S.m_LastWeapon);
-		for(int w = 0; w < 6; ++w)
-			by_utf8xbot_2211_put_i32(Out, S.m_aGotWeapon[w]);
-		for(int w = 0; w < 6; ++w)
-			by_utf8xbot_2211_put_i32(Out, S.m_aAmmo[w]);
+		for(int GotWeapon : S.m_aGotWeapon)
+			by_utf8xbot_2211_put_i32(Out, GotWeapon);
+		for(int Ammo : S.m_aAmmo)
+			by_utf8xbot_2211_put_i32(Out, Ammo);
 		by_utf8xbot_2213_put_bytes(Out, S.m_aSaveCode, sizeof(S.m_aSaveCode));
 	}
 }
@@ -181,11 +180,11 @@ bool CAnusSobStateCodec::Unpack(const std::vector<unsigned char> &In, std::vecto
 			return false;
 		if(!by_utf8xbot_2221_get_i32(In, Off, S.m_LastWeapon))
 			return false;
-		for(int w = 0; w < 6; ++w)
-			if(!by_utf8xbot_2221_get_i32(In, Off, S.m_aGotWeapon[w]))
+		for(int &GotWeapon : S.m_aGotWeapon)
+			if(!by_utf8xbot_2221_get_i32(In, Off, GotWeapon))
 				return false;
-		for(int w = 0; w < 6; ++w)
-			if(!by_utf8xbot_2221_get_i32(In, Off, S.m_aAmmo[w]))
+		for(int &Ammo : S.m_aAmmo)
+			if(!by_utf8xbot_2221_get_i32(In, Off, Ammo))
 				return false;
 		if(!by_utf8xbot_2223_get_bytes(In, Off, S.m_aSaveCode, sizeof(S.m_aSaveCode)))
 			return false;

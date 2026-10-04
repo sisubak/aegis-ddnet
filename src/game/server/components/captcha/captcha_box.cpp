@@ -84,7 +84,7 @@ void CCaptchaBox::Tick()
 {
 	float HalfW = 128.0f;
 	float HalfH = 96.0f;
-	CCaptchaMap::by_utf8xbot_5730_extents(&HalfW, &HalfH);
+	CCaptchaMap::Extents(&HalfW, &HalfH);
 
 	const float R = 14.0f;
 	const float MinX = m_Pos.x - HalfW + R;
@@ -153,7 +153,7 @@ int CCaptchaBox::by_utf8xbot_5521() const
 
 float CCaptchaBox::by_utf8xbot_8842(int Salt) const
 {
-	unsigned int x = (unsigned int)(Salt * 2654435761u + 40503u) ^ m_Seed;
+	unsigned int x = (Salt * 2654435761u + 40503u) ^ m_Seed;
 	x ^= x >> 13;
 	x *= 1274126177u;
 	x ^= x >> 16;
@@ -185,7 +185,7 @@ void CCaptchaBox::Snap(int SnappingClient)
 
 	float HalfW = 128.0f;
 	float HalfH = 96.0f;
-	CCaptchaMap::by_utf8xbot_5730_extents(&HalfW, &HalfH);
+	CCaptchaMap::Extents(&HalfW, &HalfH);
 
 	vec2 TopLeft = m_Pos + vec2(-HalfW, -HalfH);
 	vec2 TopRight = m_Pos + vec2(HalfW, -HalfH);
@@ -229,11 +229,11 @@ void CCaptchaBox::Snap(int SnappingClient)
 			float Jy1 = by_utf8xbot_8842(Salt + 4);
 
 			vec2 From = vec2(
-				OriginX + pSegs[s].x0 * GlyphW + Jx0,
-				BaseY + pSegs[s].y0 * GlyphH + Jy0);
+				OriginX + pSegs[s].m_X0 * GlyphW + Jx0,
+				BaseY + pSegs[s].m_Y0 * GlyphH + Jy0);
 			vec2 To = vec2(
-				OriginX + pSegs[s].x1 * GlyphW + Jx1,
-				BaseY + pSegs[s].y1 * GlyphH + Jy1);
+				OriginX + pSegs[s].m_X1 * GlyphW + Jx1,
+				BaseY + pSegs[s].m_Y1 * GlyphH + Jy1);
 
 			by_utf8xbot_6193(Context, IdIndex, From, To);
 		}

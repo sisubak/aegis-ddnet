@@ -11,7 +11,7 @@ class CCaptchaBox : public CEntity
 {
 public:
 	CCaptchaBox(CGameWorld *pGameWorld, vec2 Pos, const char *pCode);
-	virtual ~CCaptchaBox();
+	~CCaptchaBox() override;
 
 	void Reset() override;
 	void Tick() override;

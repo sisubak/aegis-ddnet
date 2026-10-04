@@ -11,9 +11,9 @@ public:
 	static const int BOX_HALF_W_TILES = 4;
 	static const int BOX_HALF_H_TILES = 3;
 
-	static bool by_utf8xbot_4417(IStorage *pStorage, const char *pMapName);
-	static void by_utf8xbot_5729_spawn(float *pX, float *pY);
-	static void by_utf8xbot_5730_extents(float *pHalfW, float *pHalfH);
+	static bool Generate(IStorage *pStorage, const char *pMapName);
+	static void Spawn(float *pX, float *pY);
+	static void Extents(float *pHalfW, float *pHalfH);
 };
 
 #endif

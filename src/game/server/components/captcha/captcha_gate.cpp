@@ -3,8 +3,8 @@
 CCaptchaGate::CCaptchaGate()
 {
 	m_NumDigits = 6;
-	for(int i = 0; i < MAX_CLIENTS; i++)
-		m_aActive[i] = false;
+	for(bool &Active : m_aActive)
+		Active = false;
 }
 
 bool CCaptchaGate::by_utf8xbot_9056_valid(int ClientId) const
@@ -14,9 +14,9 @@ bool CCaptchaGate::by_utf8xbot_9056_valid(int ClientId) const
 
 bool CCaptchaGate::by_utf8xbot_9057_in_queue(int ClientId) const
 {
-	for(size_t i = 0; i < m_Queue.size(); i++)
+	for(int QueuedClient : m_Queue)
 	{
-		if(m_Queue[i] == ClientId)
+		if(QueuedClient == ClientId)
 			return true;
 	}
 	return false;
@@ -32,20 +32,19 @@ void CCaptchaGate::by_utf8xbot_9058_start(int ClientId, int64_t Now)
 void CCaptchaGate::by_utf8xbot_7413()
 {
 	m_Queue.clear();
-	for(int i = 0; i < MAX_CLIENTS; i++)
-	{
-		m_aActive[i] = false;
-		m_aSessions[i].by_utf8xbot_E();
-	}
+	for(bool &Active : m_aActive)
+		Active = false;
+	for(CCaptchaSession &Session : m_aSessions)
+		Session.by_utf8xbot_E();
 	m_NumDigits = 6;
 }
 
 int CCaptchaGate::by_utf8xbot_9054_active_count() const
 {
 	int Count = 0;
-	for(int i = 0; i < MAX_CLIENTS; i++)
+	for(bool Active : m_aActive)
 	{
-		if(m_aActive[i])
+		if(Active)
 			Count++;
 	}
 	return Count;

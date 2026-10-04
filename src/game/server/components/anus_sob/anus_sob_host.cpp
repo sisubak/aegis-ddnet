@@ -72,7 +72,7 @@ void CAnusSobHost::by_utf8xbot_2020_collect(CGameContext *pGs, std::vector<SAnus
 			S.m_Jetpack = pC->m_Jetpack ? 1 : 0;
 			S.m_ActiveWeapon = pC->m_ActiveWeapon;
 			S.m_LastWeapon = pChr->GetLastWeapon();
-			for(int w = 0; w < 6 && w < NUM_WEAPONS; ++w)
+			for(int w = 0; w < NUM_WEAPONS; ++w)
 			{
 				S.m_aGotWeapon[w] = pC->m_aWeapons[w].m_Got ? 1 : 0;
 				S.m_aAmmo[w] = pC->m_aWeapons[w].m_Ammo;
@@ -173,7 +173,7 @@ void CAnusSobHost::by_utf8xbot_2024_try_restore(CGameContext *pGs, int ClientId)
 			Core.m_EndlessHook = S.m_Endless != 0;
 			Core.m_Jetpack = S.m_Jetpack != 0;
 			Core.m_ActiveWeapon = S.m_ActiveWeapon;
-			for(int w = 0; w < 6 && w < NUM_WEAPONS; ++w)
+			for(int w = 0; w < NUM_WEAPONS; ++w)
 			{
 				Core.m_aWeapons[w].m_Got = S.m_aGotWeapon[w] != 0;
 				Core.m_aWeapons[w].m_Ammo = S.m_aAmmo[w];
@@ -284,7 +284,7 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 	}
 
 	if(vArgs.empty())
-		vArgs.push_back(aExe);
+		vArgs.emplace_back(aExe);
 
 	char aPortStr[16];
 	std::snprintf(aPortStr, sizeof(aPortStr), "%d", NewPort);
@@ -292,7 +292,7 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 	std::vector<char *> vpArgv;
 	vpArgv.reserve(vArgs.size() + 1);
 	for(std::string &Arg : vArgs)
-		vpArgv.push_back(&Arg[0]);
+		vpArgv.push_back(Arg.data());
 	vpArgv.push_back(nullptr);
 
 	log_info("anus_sob", "migration START: %d clients -> new port %d exe=%s state=%s argv=%d", (int)St.size(), NewPort, aExe, aPath, (int)vArgs.size());
@@ -339,7 +339,7 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 	int WaitMs = g_Config.m_SvAnusSobChildWaitMs;
 	if(WaitMs < 100)
 		WaitMs = 100;
-	int64_t Deadline = time_get() + (int64_t)((int64_t)time_freq() * WaitMs / 1000);
+	int64_t Deadline = time_get() + time_freq() * WaitMs / 1000;
 	bool ChildReady = false;
 	while(time_get() < Deadline)
 	{
@@ -389,7 +389,7 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 	int GraceMs = g_Config.m_SvAnusSobGraceMs;
 	if(GraceMs < 100)
 		GraceMs = 100;
-	m_ExitDeadline = time_get() + (int64_t)((int64_t)time_freq() * GraceMs / 1000);
+	m_ExitDeadline = time_get() + time_freq() * GraceMs / 1000;
 	m_State = 2;
 	log_info("anus_sob", "redirected %d clients; parent exits in ~%dms", Redirected, GraceMs);
 #else
@@ -399,7 +399,7 @@ void CAnusSobHost::by_utf8xbot_2030_execute_migration(CGameContext *pGs, int New
 #endif
 }
 
-void CAnusSobHost::by_utf8xbot_2032_tick(CGameContext *pGs)
+void CAnusSobHost::by_utf8xbot_2032_tick(CGameContext *pGs) const
 {
 #if defined(CONF_FAMILY_UNIX)
 	if(m_State != 2)

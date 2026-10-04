@@ -27,8 +27,8 @@ CCaptchaController::CCaptchaController()
 {
 	m_Init = false;
 	m_Role = 0;
-	for(int i = 0; i < MAX_CLIENTS; i++)
-		m_apBox[i] = nullptr;
+	for(CCaptchaBox *&pBox : m_apBox)
+		pBox = nullptr;
 }
 
 void CCaptchaController::by_utf8xbot_8810_clear_box(int ClientId)
@@ -127,7 +127,7 @@ void CCaptchaController::by_utf8xbot_8811_begin_session(CGameContext *pGameServe
 
 	float SpawnX = 0.0f;
 	float SpawnY = 0.0f;
-	CCaptchaMap::by_utf8xbot_5729_spawn(&SpawnX, &SpawnY);
+	CCaptchaMap::Spawn(&SpawnX, &SpawnY);
 	vec2 Pos = vec2(SpawnX, SpawnY);
 
 	const char *pCode = m_Gate.by_utf8xbot_8734(ClientId);

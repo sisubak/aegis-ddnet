@@ -3,7 +3,7 @@
 
 struct CGlyphSeg
 {
-	float x0, y0, x1, y1;
+	float m_X0, m_Y0, m_X1, m_Y1;
 };
 
 const CGlyphSeg *by_utf8xbot_31007(int Digit, int *pCount);
