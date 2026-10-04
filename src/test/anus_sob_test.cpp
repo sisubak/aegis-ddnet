@@ -32,10 +32,10 @@ TEST(AnusSobState, PackUnpackRoundtrip)
 	In.push_back(B);
 
 	std::vector<unsigned char> Buf;
-	CAnusSobStateCodec::by_utf8xbot_2200_pack(In, Buf);
+	CAnusSobStateCodec::Pack(In, Buf);
 
 	std::vector<SAnusSobClientState> Out;
-	ASSERT_TRUE(CAnusSobStateCodec::by_utf8xbot_2201_unpack(Buf, Out));
+	ASSERT_TRUE(CAnusSobStateCodec::Unpack(Buf, Out));
 	ASSERT_EQ(Out.size(), In.size());
 
 	EXPECT_EQ(Out[0].m_ClientId, 3);
@@ -54,10 +54,10 @@ TEST(AnusSobState, EmptyRoundtrip)
 {
 	std::vector<SAnusSobClientState> In;
 	std::vector<unsigned char> Buf;
-	CAnusSobStateCodec::by_utf8xbot_2200_pack(In, Buf);
+	CAnusSobStateCodec::Pack(In, Buf);
 
 	std::vector<SAnusSobClientState> Out;
-	ASSERT_TRUE(CAnusSobStateCodec::by_utf8xbot_2201_unpack(Buf, Out));
+	ASSERT_TRUE(CAnusSobStateCodec::Unpack(Buf, Out));
 	EXPECT_TRUE(Out.empty());
 }
 
@@ -65,19 +65,19 @@ TEST(AnusSobState, RejectsCorruptMagic)
 {
 	std::vector<unsigned char> Buf(16, 0);
 	std::vector<SAnusSobClientState> Out;
-	EXPECT_FALSE(CAnusSobStateCodec::by_utf8xbot_2201_unpack(Buf, Out));
+	EXPECT_FALSE(CAnusSobStateCodec::Unpack(Buf, Out));
 
 	std::vector<unsigned char> Empty;
-	EXPECT_FALSE(CAnusSobStateCodec::by_utf8xbot_2201_unpack(Empty, Out));
+	EXPECT_FALSE(CAnusSobStateCodec::Unpack(Empty, Out));
 }
 
 TEST(AnusSobState, RejectsTrailingData)
 {
 	std::vector<SAnusSobClientState> In;
 	std::vector<unsigned char> Buf;
-	CAnusSobStateCodec::by_utf8xbot_2200_pack(In, Buf);
+	CAnusSobStateCodec::Pack(In, Buf);
 	Buf.push_back(0);
 
 	std::vector<SAnusSobClientState> Out;
-	EXPECT_FALSE(CAnusSobStateCodec::by_utf8xbot_2201_unpack(Buf, Out));
+	EXPECT_FALSE(CAnusSobStateCodec::Unpack(Buf, Out));
 }

@@ -1792,7 +1792,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 		char aWlAddr[NETADDR_MAXSTRSIZE];
 		net_addr_str(&pPacket->m_Address, aWlAddr, sizeof(aWlAddr), false);
 		int64_t *pGrace = (ClientId >= 0 && ClientId < MAX_CLIENTS) ? &m_aClients[ClientId].m_CaptchaGraceSince : nullptr;
-		int Gate = CCaptchaSession::by_utf8xbot_7731_gate_packet(g_Config.m_SvCaptchaSrvIpcPath, aWlAddr, time_timestamp(), g_Config.m_SvCaptchaSrvWhitelistTtlSec, time_get(), time_freq(), pGrace);
+		int Gate = CCaptchaSession::GatePacket(g_Config.m_SvCaptchaSrvIpcPath, aWlAddr, time_timestamp(), g_Config.m_SvCaptchaSrvWhitelistTtlSec, time_get(), time_freq(), pGrace);
 		if(Gate == CCaptchaSession::GATE_KICK)
 			m_NetServer.Drop(ClientId, "Этот порт только для прошедших капчу. Зайди через gate-порт.");
 		if(Gate != CCaptchaSession::GATE_PASS)

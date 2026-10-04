@@ -97,8 +97,8 @@ TEST(Captcha, Timeout)
 TEST(Captcha, WhitelistFormatAndDedup)
 {
 	CTestInfo Info;
-	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "1.2.3.4", 1000, 0, 0);
-	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "1.2.3.4", 2000, 0, 0);
+	CCaptchaSession::WriteWhitelist(Info.m_aFilename, "1.2.3.4", 1000, 0, 0);
+	CCaptchaSession::WriteWhitelist(Info.m_aFilename, "1.2.3.4", 2000, 0, 0);
 
 	std::string Content = by_utf8xbot_ReadFile(Info.m_aFilename);
 	EXPECT_NE(Content.find("1.2.3.4 2000"), std::string::npos);
@@ -116,12 +116,12 @@ TEST(Captcha, WhitelistFormatAndDedup)
 TEST(Captcha, WhitelistTtl)
 {
 	CTestInfo Info;
-	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "9.9.9.9", 1000, 0, 3600);
+	CCaptchaSession::WriteWhitelist(Info.m_aFilename, "9.9.9.9", 1000, 0, 3600);
 
-	EXPECT_TRUE(CCaptchaSession::by_utf8xbot_L(Info.m_aFilename, "9.9.9.9", 1000, 3600));
-	EXPECT_FALSE(CCaptchaSession::by_utf8xbot_L(Info.m_aFilename, "9.9.9.9", 5000, 3600));
-	EXPECT_TRUE(CCaptchaSession::by_utf8xbot_L(Info.m_aFilename, "9.9.9.9", 5000, 0));
-	EXPECT_FALSE(CCaptchaSession::by_utf8xbot_L(Info.m_aFilename, "8.8.8.8", 1000, 3600));
+	EXPECT_TRUE(CCaptchaSession::IsWhitelisted(Info.m_aFilename, "9.9.9.9", 1000, 3600));
+	EXPECT_FALSE(CCaptchaSession::IsWhitelisted(Info.m_aFilename, "9.9.9.9", 5000, 3600));
+	EXPECT_TRUE(CCaptchaSession::IsWhitelisted(Info.m_aFilename, "9.9.9.9", 5000, 0));
+	EXPECT_FALSE(CCaptchaSession::IsWhitelisted(Info.m_aFilename, "8.8.8.8", 1000, 3600));
 
 	EXPECT_FALSE(fs_remove(Info.m_aFilename));
 }
@@ -129,9 +129,9 @@ TEST(Captcha, WhitelistTtl)
 TEST(Captcha, WhitelistRefreshesWithinSameSecond)
 {
 	CTestInfo Info;
-	EXPECT_FALSE(CCaptchaSession::by_utf8xbot_L(Info.m_aFilename, "1.2.3.4", 1000, 3600));
-	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "1.2.3.4", 1000, 0, 3600);
-	EXPECT_TRUE(CCaptchaSession::by_utf8xbot_L(Info.m_aFilename, "1.2.3.4", 1000, 3600));
+	EXPECT_FALSE(CCaptchaSession::IsWhitelisted(Info.m_aFilename, "1.2.3.4", 1000, 3600));
+	CCaptchaSession::WriteWhitelist(Info.m_aFilename, "1.2.3.4", 1000, 0, 3600);
+	EXPECT_TRUE(CCaptchaSession::IsWhitelisted(Info.m_aFilename, "1.2.3.4", 1000, 3600));
 
 	EXPECT_FALSE(fs_remove(Info.m_aFilename));
 }
@@ -139,8 +139,8 @@ TEST(Captcha, WhitelistRefreshesWithinSameSecond)
 TEST(Captcha, WhitelistRejectsFutureTimestamp)
 {
 	CTestInfo Info;
-	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "1.2.3.4", 2000, 0, 3600);
-	EXPECT_FALSE(CCaptchaSession::by_utf8xbot_L(Info.m_aFilename, "1.2.3.4", 1000, 3600));
+	CCaptchaSession::WriteWhitelist(Info.m_aFilename, "1.2.3.4", 2000, 0, 3600);
+	EXPECT_FALSE(CCaptchaSession::IsWhitelisted(Info.m_aFilename, "1.2.3.4", 1000, 3600));
 
 	EXPECT_FALSE(fs_remove(Info.m_aFilename));
 }
@@ -148,11 +148,11 @@ TEST(Captcha, WhitelistRejectsFutureTimestamp)
 TEST(Captcha, WhitelistSizeCap)
 {
 	CTestInfo Info;
-	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "1.1.1.1", 1, 3, 0);
-	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "2.2.2.2", 2, 3, 0);
-	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "3.3.3.3", 3, 3, 0);
-	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "4.4.4.4", 4, 3, 0);
-	CCaptchaSession::by_utf8xbot_K(Info.m_aFilename, "5.5.5.5", 5, 3, 0);
+	CCaptchaSession::WriteWhitelist(Info.m_aFilename, "1.1.1.1", 1, 3, 0);
+	CCaptchaSession::WriteWhitelist(Info.m_aFilename, "2.2.2.2", 2, 3, 0);
+	CCaptchaSession::WriteWhitelist(Info.m_aFilename, "3.3.3.3", 3, 3, 0);
+	CCaptchaSession::WriteWhitelist(Info.m_aFilename, "4.4.4.4", 4, 3, 0);
+	CCaptchaSession::WriteWhitelist(Info.m_aFilename, "5.5.5.5", 5, 3, 0);
 
 	std::string Content = by_utf8xbot_ReadFile(Info.m_aFilename);
 	int Lines = 0;

@@ -189,7 +189,7 @@ bool CCaptchaIpc::by_utf8xbot_5503_poll(char *pOutIp, int OutSize, const char *p
 	}
 }
 
-bool CCaptchaIpc::by_utf8xbot_5504_send(int Port, const char *pIp, const char *pSecret)
+bool CCaptchaIpc::Send(int Port, const char *pIp, const char *pSecret)
 {
 	if(!pIp)
 		return false;

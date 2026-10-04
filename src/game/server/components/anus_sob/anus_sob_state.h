@@ -41,8 +41,8 @@ public:
 	static const unsigned MAGIC = 0x53534E41u;
 	static const unsigned VERSION = 1u;
 
-	static void by_utf8xbot_2200_pack(const std::vector<SAnusSobClientState> &In, std::vector<unsigned char> &Out);
-	static bool by_utf8xbot_2201_unpack(const std::vector<unsigned char> &In, std::vector<SAnusSobClientState> &Out);
+	static void Pack(const std::vector<SAnusSobClientState> &In, std::vector<unsigned char> &Out);
+	static bool Unpack(const std::vector<unsigned char> &In, std::vector<SAnusSobClientState> &Out);
 };
 
 #endif

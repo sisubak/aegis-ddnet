@@ -173,7 +173,7 @@ namespace
 	}
 }
 
-void CCaptchaSession::by_utf8xbot_K(const char *pPath, const char *pIp, int64_t NowUnix, int MaxEntries, int TtlSec)
+void CCaptchaSession::WriteWhitelist(const char *pPath, const char *pIp, int64_t NowUnix, int MaxEntries, int TtlSec)
 {
 	if(!pPath || !pIp || !*pIp)
 		return;
@@ -230,7 +230,7 @@ void CCaptchaSession::by_utf8xbot_K(const char *pPath, const char *pIp, int64_t 
 	}
 }
 
-bool CCaptchaSession::by_utf8xbot_L(const char *pPath, const char *pIp, int64_t NowUnix, int TtlSec)
+bool CCaptchaSession::IsWhitelisted(const char *pPath, const char *pIp, int64_t NowUnix, int TtlSec)
 {
 	if(!pPath || !pIp)
 		return false;
@@ -257,9 +257,9 @@ bool CCaptchaSession::by_utf8xbot_L(const char *pPath, const char *pIp, int64_t 
 	return true;
 }
 
-int CCaptchaSession::by_utf8xbot_7731_gate_packet(const char *pPath, const char *pIp, int64_t NowUnix, int TtlSec, int64_t Now, int64_t Freq, int64_t *pGraceSince)
+int CCaptchaSession::GatePacket(const char *pPath, const char *pIp, int64_t NowUnix, int TtlSec, int64_t Now, int64_t Freq, int64_t *pGraceSince)
 {
-	if(by_utf8xbot_L(pPath, pIp, NowUnix, TtlSec))
+	if(IsWhitelisted(pPath, pIp, NowUnix, TtlSec))
 	{
 		if(pGraceSince)
 			*pGraceSince = 0;

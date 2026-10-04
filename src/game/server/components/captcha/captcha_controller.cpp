@@ -140,7 +140,7 @@ void CCaptchaController::by_utf8xbot_8812_pass(CGameContext *pGameServer, int Cl
 	char aAddr[NETADDR_MAXSTRSIZE];
 	net_addr_str(pGameServer->Server()->ClientAddr(ClientId), aAddr, sizeof(aAddr), false);
 
-	if(!CCaptchaIpc::by_utf8xbot_5504_send(g_Config.m_SvCaptchaSrvIpcPort, aAddr, g_Config.m_SvCaptchaSrvIpcSecret))
+	if(!CCaptchaIpc::Send(g_Config.m_SvCaptchaSrvIpcPort, aAddr, g_Config.m_SvCaptchaSrvIpcSecret))
 	{
 		pGameServer->Server()->Kick(ClientId, "Капча: временная ошибка, попробуй переподключиться");
 		m_Gate.by_utf8xbot_9046(ClientId);
@@ -167,7 +167,7 @@ void CCaptchaController::by_utf8xbot_8802_tick(CGameContext *pGameServer)
 	{
 		char aIp[NETADDR_MAXSTRSIZE];
 		while(m_Ipc.by_utf8xbot_5503_poll(aIp, sizeof(aIp), g_Config.m_SvCaptchaSrvIpcSecret))
-			CCaptchaSession::by_utf8xbot_K(g_Config.m_SvCaptchaSrvIpcPath, aIp, time_timestamp(), g_Config.m_SvCaptchaSrvWhitelistMax, g_Config.m_SvCaptchaSrvWhitelistTtlSec);
+			CCaptchaSession::WriteWhitelist(g_Config.m_SvCaptchaSrvIpcPath, aIp, time_timestamp(), g_Config.m_SvCaptchaSrvWhitelistMax, g_Config.m_SvCaptchaSrvWhitelistTtlSec);
 		return;
 	}
 

@@ -85,7 +85,7 @@ void CAnusSobHost::by_utf8xbot_2020_collect(CGameContext *pGs, std::vector<SAnus
 bool CAnusSobHost::by_utf8xbot_2021_write_state_file(const char *pPath, const std::vector<SAnusSobClientState> &St)
 {
 	std::vector<unsigned char> Buf;
-	CAnusSobStateCodec::by_utf8xbot_2200_pack(St, Buf);
+	CAnusSobStateCodec::Pack(St, Buf);
 	FILE *pF = std::fopen(pPath, "wb");
 	if(!pF)
 		return false;
@@ -112,7 +112,7 @@ bool CAnusSobHost::by_utf8xbot_2022_read_state_file(const char *pPath, std::vect
 	std::fclose(pF);
 	if(R != Buf.size())
 		return false;
-	return CAnusSobStateCodec::by_utf8xbot_2201_unpack(Buf, Out);
+	return CAnusSobStateCodec::Unpack(Buf, Out);
 }
 
 bool CAnusSobHost::by_utf8xbot_2023_load_from_env()

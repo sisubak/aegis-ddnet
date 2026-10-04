@@ -64,7 +64,7 @@ static bool by_utf8xbot_2223_get_bytes(const std::vector<unsigned char> &In, uns
 	return true;
 }
 
-void CAnusSobStateCodec::by_utf8xbot_2200_pack(const std::vector<SAnusSobClientState> &In, std::vector<unsigned char> &Out)
+void CAnusSobStateCodec::Pack(const std::vector<SAnusSobClientState> &In, std::vector<unsigned char> &Out)
 {
 	Out.clear();
 	by_utf8xbot_2210_put_u32(Out, MAGIC);
@@ -107,7 +107,7 @@ void CAnusSobStateCodec::by_utf8xbot_2200_pack(const std::vector<SAnusSobClientS
 	}
 }
 
-bool CAnusSobStateCodec::by_utf8xbot_2201_unpack(const std::vector<unsigned char> &In, std::vector<SAnusSobClientState> &Out)
+bool CAnusSobStateCodec::Unpack(const std::vector<unsigned char> &In, std::vector<SAnusSobClientState> &Out)
 {
 	Out.clear();
 	unsigned Off = 0;
